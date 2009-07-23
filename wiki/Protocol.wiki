@@ -1,0 +1,39 @@
+#summary Client-Server data exchange protocol description
+
+= Introduction =
+
+This document describes how Open Development Assistant communicates between its parts (client and server).
+
+
+= Protocol =
+
+== Concept ==
+
+=== Idea ===
+
+The protocol implements persistent connection. This means that client is continuously connected to the server during the work session. In case of any connection errors, client should reconnect and continue working. There should be a time limit for each operation to disallow connection hang.
+
+=== The protocol package ===
+
+Protocol works in binary mode and has "preamble" and the data package. Preamble is an integer (unsigned, 2 bytes length) value specifying the operation type. The package follows the preamble and its structure depends on the operation type. 
+
+Server reply gets built in the same way - preamble and the response package. In case of error, preamble is equal to FFFF.
+
+
+== Client requests ==
+
+=== Authentication ===
+Authentication is performed as first operation after the connection establishment. This means user authenticates each time client connects to the server. 
+
+User authenticates using login and password. User credentials is a subject of administrator responsibility. Open registration in unavailable.
+
+||         *Client*            ||            *Server*         ||
+||*Operation*: 1 (auth start)<br/>*Package*: empty  || *Operation*: 1 (auth start)<br/>*Package*: authToken       ||
+||*Operation*: 2 (authenticate)<br/>*Package*: login, replyToken|| *Operation*: 2 (authenticate ok) / FFFF (error)<br/>*Package*: user minimum info / error code||
+
+
+User minimum info contains:
+ * User UID (unique id)
+ * User full name
+ * User company name
+ * User company CID (unique id)
