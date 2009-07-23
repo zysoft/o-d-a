@@ -23,12 +23,13 @@ Server reply gets built in the same way - preamble and the response package. In 
 == Client requests ==
 
 === Authentication ===
+
 Authentication is performed as first operation after the connection establishment. This means user authenticates each time client connects to the server. 
 
 User authenticates using login and password. User credentials is a subject of administrator responsibility. Open registration in unavailable.
 
-||         *Client*            ||            *Server*         ||
-||*Operation*: 1 (auth start)<br/>*Package*: empty  || *Operation*: 1 (auth start)<br/>*Package*: authToken       ||
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 1 (auth start)<br/>*Package*: empty              || *Operation*: 1 (auth start)<br/>*Package*: authToken       ||
 ||*Operation*: 2 (authenticate)<br/>*Package*: login, replyToken|| *Operation*: 2 (authenticate ok) / FFFF (error)<br/>*Package*: user minimum info / error code||
 
 
@@ -37,3 +38,144 @@ User minimum info contains:
  * User full name
  * User company name
  * User company CID (unique id)
+
+
+=== Getting user information===
+
+User information is stored on server and can be retrieved via special protocol instructions. 
+This information contains:
+ * Project list user participates in (gets collected through all the linked task trackers)
+ * Tasks list assigned to user
+
+The get request can be made as follows:
+
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 3 (get user info)<br/>*Package*: empty           || *Operation*: 3 (user info) / FFFF (error)<br/>*Package*: user info / error code||
+
+Server replies with project and task lists.
+
+Each project in the list contains:
+ * Tracker unique id (TRID) (for further identification)
+ * Project unique id (PID) (for further identification)
+ * Name
+ * Currently assigned tasks list (Json encoded)
+ * List of available activities (development, bugfixing, research, etc. depending on tracker settings)
+
+Each task contains:
+ * Task unique id (TID) (for further identification)
+ * Project unique id task belongs to (PID) (for further identification)
+ * Name
+ * Description (with history)
+ * Priority
+ * Status
+ * % done
+ * Author
+ * Date when task is created
+ * Estimated time
+ * Due date
+
+=== Contact list ===
+
+User contact list depends on contact type. Contact type can be "COMPANY", "OFFICE" or "TEAM". "TEAM" contact list depends on the project. 
+The next request is used to get contact list:
+
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 4 (get contacts)<br/>*Package*: contacts type    || *Operation*: 4 (contacts) / FFFF (error)<br/>*Package*: contacts list / error code||
+
+Contacts type package contains type and project id.Project id is required for "TEAM" type contacts.
+
+=== Send contacts a message ===
+It is possible to send contact a message. It also possible to send message to the contacts group. 
+The next protocol request will do it:
+
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 5 (send message)<br/>*Package*: message info    || *Operation*: 5 (send message) / FFFF (error)<br/>*Package*: empty / error code||
+
+Message info contains message text and target user identifiers.
+
+=== Report to a task ===
+
+Client can report to a task and/or change task parameters. 
+The next request shows how to do that:
+
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 6 (task report)<br/>*Package*: report info    || *Operation*: 6 (task report) / FFFF (error)<br/>*Package*: empty / error code||
+
+Report info contains:
+ * Task unique id (TID)
+ * Project unique id (PID)
+ * Comment
+ * Spent time
+ * % done
+ * Assignee change
+ * Status
+ * Custom report time
+ * Activity type (development, research, etc.)
+
+
+=== Get task parameters ===
+
+Because user role is different for each project, task creation parameters can differ. This applies to existent tasks as well as to new ones. 
+The next request shows how to get that parameters:
+
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 7 (task parameters)<br/>*Package*: task info    || *Operation*: 7 (task parameters) / FFFF (error)<br/>*Package*: task parameters / error code||
+
+Task parameters are:
+ * Tracker unique id (TID)
+ * Project unique id (PID)
+ * Task unique id (TID, optional)
+
+Task parameters can be:
+ * List of available types (bug, task, feature, etc. depending on tracker settings)
+ * List of available statuses (depending on tracker settings)
+ * List of available priorities (depending on tracker settings)
+ * List of available categories (frontend, backend, etc. depending on tracker settings)
+ * List of available assignee (depending on project participants)
+
+=== Create a task ===
+Client is able to create a task. 
+The next request allows to do it:
+
+||                                          *Client*            ||                     *Server*         ||
+||*Operation*: 8 (create task)<br/>*Package*: task data    || *Operation*: 8 (create task) / FFFF (error)<br/>*Package*: empty / error code||
+
+Task data contains:
+ * Tracker unique id (TID)
+ * Project unique id (PID)
+ * Type
+ * Status
+ * Priority
+ * Category (optional)
+ * Assignee (UID)
+
+== Server notifications ==
+
+NOTE: Server never waits for client to confirm any of the notifications.
+
+=== Contact status change ===
+
+When the contact status is changed, server notifies clients with the following request:
+
+||                         *Server*                                ||
+|| *Operation*: 9 (status notification)<br/>*Package*: status info ||
+
+Status info contains target user UID and new status code.
+
+=== Task list update ===
+
+A notification tells client that assigned task list is updated. 
+This is done as follows:
+
+||                         *Server*                                 ||
+|| *Operation*: 10 (tasks update notification)<br/>*Package*: empty ||
+
+
+=== New message ===
+
+When new message arrives, the next notification appears:
+
+||                         *Server*                          ||
+|| *Operation*: 11 (new message)<br/>*Package*: message info ||
+
+Message info contains sender UID and the text.
