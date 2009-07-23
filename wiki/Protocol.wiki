@@ -1,5 +1,7 @@
 #summary Client-Server data exchange protocol description
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This document describes how Open Development Assistant communicates between its parts (client and server).
