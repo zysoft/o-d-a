@@ -28,9 +28,9 @@ Authentication is performed as first operation after the connection establishmen
 
 User authenticates using login and password. User credentials is a subject of administrator responsibility. Open registration in unavailable.
 
-||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 1 (auth start)<br/>*Package*: empty              || *Operation*: 1 (auth start)<br/>*Package*: authToken       ||
-||*Operation*: 2 (authenticate)<br/>*Package*: login, replyToken|| *Operation*: 2 (authenticate ok) / FFFF (error)<br/>*Package*: user minimum info / error code||
+||                                          *Client*              ||                     *Server*          ||
+|| *Operation*: 1 (auth start)<br/>*Package*: empty               || *Operation*: 1 (auth start)<br/>*Package*: authToken       ||
+|| *Operation*: 2 (authenticate)<br/>*Package*: login, replyToken || *Operation*: 2 (authenticate ok) / FFFF (error)<br/>*Package*: user minimum info / error code ||
 
 
 User minimum info contains:
@@ -50,7 +50,7 @@ This information contains:
 The get request can be made as follows:
 
 ||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 3 (get user info)<br/>*Package*: empty           || *Operation*: 3 (user info) / FFFF (error)<br/>*Package*: user info / error code||
+|| *Operation*: 3 (get user info)<br/>*Package*: empty           || *Operation*: 3 (user info) / FFFF (error)<br/>*Package*: user info / error code||
 
 Server replies with project and task lists.
 
@@ -80,7 +80,7 @@ User contact list depends on contact type. Contact type can be "COMPANY", "OFFIC
 The next request is used to get contact list:
 
 ||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 4 (get contacts)<br/>*Package*: contacts type    || *Operation*: 4 (contacts) / FFFF (error)<br/>*Package*: contacts list / error code||
+|| *Operation*: 4 (get contacts)<br/>*Package*: contacts type    || *Operation*: 4 (contacts) / FFFF (error)<br/>*Package*: contacts list / error code||
 
 Contacts type package contains type and project id.Project id is required for "TEAM" type contacts.
 
@@ -89,7 +89,7 @@ It is possible to send contact a message. It also possible to send message to th
 The next protocol request will do it:
 
 ||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 5 (send message)<br/>*Package*: message info    || *Operation*: 5 (send message) / FFFF (error)<br/>*Package*: empty / error code||
+|| *Operation*: 5 (send message)<br/>*Package*: message info    || *Operation*: 5 (send message) / FFFF (error)<br/>*Package*: empty / error code||
 
 Message info contains message text and target user identifiers.
 
@@ -99,7 +99,7 @@ Client can report to a task and/or change task parameters.
 The next request shows how to do that:
 
 ||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 6 (task report)<br/>*Package*: report info    || *Operation*: 6 (task report) / FFFF (error)<br/>*Package*: empty / error code||
+|| *Operation*: 6 (task report)<br/>*Package*: report info    || *Operation*: 6 (task report) / FFFF (error)<br/>*Package*: empty / error code||
 
 Report info contains:
  * Task unique id (TID)
@@ -119,7 +119,7 @@ Because user role is different for each project, task creation parameters can di
 The next request shows how to get that parameters:
 
 ||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 7 (task parameters)<br/>*Package*: task info    || *Operation*: 7 (task parameters) / FFFF (error)<br/>*Package*: task parameters / error code||
+|| *Operation*: 7 (task parameters)<br/>*Package*: task info    || *Operation*: 7 (task parameters) / FFFF (error)<br/>*Package*: task parameters / error code||
 
 Task parameters are:
  * Tracker unique id (TID)
@@ -138,7 +138,7 @@ Client is able to create a task.
 The next request allows to do it:
 
 ||                                          *Client*            ||                     *Server*         ||
-||*Operation*: 8 (create task)<br/>*Package*: task data    || *Operation*: 8 (create task) / FFFF (error)<br/>*Package*: empty / error code||
+|| *Operation*: 8 (create task)<br/>*Package*: task data    || *Operation*: 8 (create task) / FFFF (error)<br/>*Package*: empty / error code||
 
 Task data contains:
  * Tracker unique id (TID)
