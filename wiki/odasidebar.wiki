@@ -1,5 +1,5 @@
 #labels Deprecated
 === Documents ===
 
- * [FeaturesList Planning features]
+ * [FeaturesList Planned features]
  * [Protocol Data exchange protocol]
