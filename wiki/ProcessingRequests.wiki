@@ -1,0 +1,50 @@
+#summary This document describes how client and server process the requests
+#labels Phase-Design
+
+= Processing requests =
+
+_*Note*: Work on the document is in progress_
+
+This document describes how client and server process the requests.
+We assume that the most effective way to build server (and client) is to use asynchronous model.
+So, there will be no custom threads. Everything is done via application event loop.
+
+To do that, we need to know each client state at every moment. We decided to use [http://www.qtsoftware.com/products/appdev/add-on-products/catalog/4/Utilities/qt-state-machine-framework Qt State Machine Framework] which is the best for our task.
+
+<font color="red"> *Note*: Qt State Machine Framework is requered for application to work</font>
+
+== Server model ==
+
+Server has a special object for each client which contains its socket, state machine (with current state) and all the requered methods for interaction.
+
+The state machine configuration is linked with client socket events, but data processing differs depending on the state client is currently in. 
+
+The next diagram shows the states and transitions for each client on the server:
+
+[http://files.getdropbox.com/u/1654827/O-D-A/server_sm.png]
+
+Let's see what does each state mean:
+ * *Pre-auth* - Client just connected and server waits for token request (initial state)
+ * *Auth wait* - Token sent and server waits for login data
+ * *Command wait* - The central state when server waits for a command from client
+ * *Operation 1...N* - Doing requested operation
+
+When the command execution is done, client is returned to *Command wait* state.
+
+Sending notifications is much simplier procedure because we assume that server never waits for client confirmation (see [Protocol#Server_notifications Server notifications] section).
+
+
+== Client model ==
+
+Client model follows the same idea, but has only one state machine describing client state at every moment. Client states and transitions are shown on the following diagram:
+
+[http://files.getdropbox.com/u/1654827/O-D-A/client_sm.png]
+
+Let's see what does each state mean:
+ * *Init* - Client just connected and sent token request (initial state)
+ * *Auth* - Client sent authentication data and waits for server to confirm
+ * *Request wait* - Central state where client waits for a request
+ * *Notification 1...N* - Client processes server notification
+ * *Operation 1...M* - Client performs an operation
+
+*Request wait* is a state when client waits for both - server notification and its own commands. This means that client needs to send a command to perform any server request. Then the command will be processed by moving to one of the *Operation* states.
