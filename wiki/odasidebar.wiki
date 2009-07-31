@@ -3,3 +3,4 @@
 
  * [FeaturesList Planned features]
  * [Protocol Data exchange protocol]
+ * [ProcessingRequests Client-Server requests processing]
