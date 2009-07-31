@@ -153,7 +153,7 @@ Task data contains:
 
 == Server notifications ==
 
-NOTE: Server never waits for client to confirm any of the notifications.
+<font color="red"> *Note:* Server never waits for client to confirm any of the notifications.</font>
 
 === Contact status change ===
 
