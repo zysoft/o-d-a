@@ -21,7 +21,7 @@ The state machine configuration is linked with client socket events, but data pr
 
 The next diagram shows the states and transitions for each client on the server:
 
-[http://files.getdropbox.com/u/1654827/O-D-A/server_sm.png]
+[http://o-d-a.googlecode.com/svn/wiki_images/server_sm.png]
 
 Let's see what does each state mean:
  * *Pre-auth* - Client just connected and server waits for token request (initial state)
@@ -38,7 +38,7 @@ Sending notifications is much simplier procedure because we assume that server n
 
 Client model follows the same idea, but has only one state machine describing client state at every moment. Client states and transitions are shown on the following diagram:
 
-[http://files.getdropbox.com/u/1654827/O-D-A/client_sm.png]
+[http://o-d-a.googlecode.com/svn/wiki_images/client_sm.png]
 
 Let's see what does each state mean:
  * *Init* - Client just connected and sent token request (initial state)
