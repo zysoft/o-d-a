@@ -24,14 +24,27 @@ The next diagram shows the states and transitions for each client on the server:
 [http://o-d-a.googlecode.com/svn/wiki_images/server_sm.png]
 
 Let's see what does each state mean:
- * *Pre-auth* - Client just connected and server waits for token request (initial state)
- * *Auth wait* - Token sent and server waits for login data
+ * *Init* - Client state machine intialized (initial state)
+ * *Pre-auth* - Got token request, token sent, waiting for credentials
+ * *Authentication* - Got credentials, authenticating
  * *Command wait* - The central state when server waits for a command from client
- * *Operation 1...N* - Doing requested operation
+ * *Command route* - Short term state when the command gets routed (operation selection)
+ * *Operation 1...N execution* - Doing requested operation
 
 When the command execution is done, client is returned to *Command wait* state.
 
 Sending notifications is much simplier procedure because we assume that server never waits for client confirmation (see [Protocol#Server_notifications Server notifications] section).
+
+
+For better understanding how does it work with socket, the next diagram shows the main data flow:
+
+[http://o-d-a.googlecode.com/svn/wiki_images/server_sm_socket.png]
+
+Spawning threads is the potentially allowed operation, but we should avoid using it until we have no other option (for completely synchronous operations).
+
+*Request package* means the package itself without preamble. 
+*Response full package* means sending preamble and then the package.
+
 
 
 == Client model ==
@@ -41,10 +54,19 @@ Client model follows the same idea, but has only one state machine describing cl
 [http://o-d-a.googlecode.com/svn/wiki_images/client_sm.png]
 
 Let's see what does each state mean:
- * *Init* - Client just connected and sent token request (initial state)
- * *Auth* - Client sent authentication data and waits for server to confirm
- * *Request wait* - Central state where client waits for a request
- * *Notification 1...N* - Client processes server notification
- * *Operation 1...M* - Client performs an operation
+ * *Pre-init* - Client just initialized and initiated the connection (initial state)
+ * *Init* - Connection established, sending token request
+ * *Auth step 1* - Token received, authentication data sent, waiting for server to confirm
+ * *Auth step 2* - Got server confirmation. Checking it out
+ * *Data wait* - Central state where client waits for server packages
+ * *Data route* - Got preamble, deciding which operation it is
+ * *Operation 1...N* - Parsing package
 
-*Request wait* is a state when client waits for both - server notification and its own commands. This means that client needs to send a command to perform any server request. Then the command will be processed by moving to one of the *Operation* states.
+*Request wait* is a state when client waits for server data packages. To perform server requests, client should be equiped with a set of slots providing event driven interface for making server requests - one slot for one operation. We assume server request as atomic operation and don't put it to state machine. State machine will be used to read the server response packages.
+
+Let's see the process on the state diagram with socket shown:
+
+[http://o-d-a.googlecode.com/svn/wiki_images/client_sm_socket.png]
+
+
+*Response package* means server response package without preamble.
