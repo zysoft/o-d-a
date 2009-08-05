@@ -60,7 +60,7 @@ Each project in the list contains:
  * Tracker unique id (TRID) (for further identification)
  * Project unique id (PID) (for further identification)
  * Name
- * Currently assigned tasks list (Json encoded)
+ * Currently assigned tasks list
  * List of available activities (development, bugfixing, research, etc. depending on tracker settings)
 
 Each task contains:
