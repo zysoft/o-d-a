@@ -143,6 +143,7 @@ OdaData* OdaClient::getPackage()
     char* datac = (char*)malloc(size);
     socket->read(datac, size);
     QByteArray data(datac);
+    free(datac);
     return OdaData::unserialize(&data);
 }
 
