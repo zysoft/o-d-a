@@ -8,12 +8,14 @@ SOURCES += main.cpp \
     loginwindow.cpp \
     protocol/odaconnection.cpp \
     mainwindow.cpp \
-    settingswindow.cpp
+    settingswindow.cpp \
+    ../lib/odaprotocol/odadata.cpp
 HEADERS += loginwindow.h \
     protocol/odaconnection.h \
     mainwindow.h \
-    ../lib/odapackages.h \
-    settingswindow.h
+    settingswindow.h \
+    ../lib/odaprotocol/odadefinitions.h \
+    ../lib/odaprotocol/odadata.h
 FORMS += loginwindow.ui \
     mainwindow.ui \
     settingswindow.ui
