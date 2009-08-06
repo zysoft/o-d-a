@@ -1,19 +1,19 @@
-<!-- Tufts VUE 2.3.1 concept-map (State machines updated.vue) 2009-08-06 -->
+<!-- Tufts VUE 2.3.1 concept-map (State machines.vue) 2009-08-06 -->
 <!-- Tufts VUE: http://vue.tufts.edu/ -->
 <!-- Do Not Remove: VUE mapping @version(1.1) jar:file:/home/zysoft/VUE/VUE.jar!/tufts/vue/resources/lw_mapping_1_1.xml -->
-<!-- Do Not Remove: Saved date Thu Aug 06 12:47:39 EEST 2009 by zysoft on platform Linux 2.6.28-14-generic in JVM 1.6.0_14-b08 -->
+<!-- Do Not Remove: Saved date Thu Aug 06 16:04:08 EEST 2009 by zysoft on platform Linux 2.6.28-14-generic in JVM 1.6.0_14-b08 -->
 <!-- Do Not Remove: Saving version @(#)VUE: built May 6 2009 at 1148 by vue on Linux 2.4.21-57.EL i386 JVM 1.5.0_06-b05 -->
 <?xml version="1.0" encoding="US-ASCII"?>
 <LW-MAP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="none" ID="0"
-    label="State machines updated.vue" x="0.0" y="0.0" width="1.4E-45"
+    label="State machines.vue" x="0.0" y="0.0" width="1.4E-45"
     height="1.4E-45" strokeWidth="0.0" autoSized="false">
     <notes>This map shows two state machines for Open Development Assistant</notes>
-    <resource referenceCreated="1249552060058" size="145857"
-        spec="/home/zysoft/Work/Private/OfficeAgent 2/State machines updated.vue"
+    <resource referenceCreated="1249563848623" size="140679"
+        spec="/home/zysoft/Work/Private/O-D-A/doc_src_materials/State machines.vue"
         type="1" xsi:type="URLResource">
-        <title>State machines updated.vue</title>
-        <property key="File" value="/home/zysoft/Work/Private/OfficeAgent 2/State machines updated.vue"/>
+        <title>State machines.vue</title>
+        <property key="File" value="/home/zysoft/Work/Private/O-D-A/doc_src_materials/State machines.vue"/>
     </resource>
     <fillColor>#FFFFFF</fillColor>
     <strokeColor>#404040</strokeColor>
@@ -57,19 +57,19 @@
         </metadata-list>
         <URIString>http://vue.tufts.edu/rdf/resource/d1b29fad7f00010101d479cf2f3f583a</URIString>
         <richText>&lt;html&gt;
-  &lt;head style="color: #000000" color="#000000"&gt;
+  &lt;head color="#000000" style="color: #000000"&gt;
     &lt;style type="text/css"&gt;
       &lt;!--
-        body { margin-right: 0px; margin-top: 0px; font-size: 12; margin-bottom: 0px; margin-left: 0px; color: #000000; font-family: Arial }
-        ol { list-style-position: outside; margin-top: 6; font-size: 12; vertical-align: middle; margin-left: 30; font-family: Arial }
-        p { margin-right: 0; margin-top: 0; margin-bottom: 0; margin-left: 0; color: #000000 }
-        ul { list-style-position: outside; margin-top: 6; font-size: 12; vertical-align: middle; margin-left: 30; font-family: Arial }
+        body { margin-right: 0px; margin-top: 0px; margin-left: 0px; margin-bottom: 0px; font-size: 12; color: #000000; font-family: Arial }
+        ol { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 12; font-family: Arial }
+        p { margin-right: 0; margin-top: 0; margin-left: 0; margin-bottom: 0; color: #000000 }
+        ul { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 12; font-family: Arial }
       --&gt;
     &lt;/style&gt;
     
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;p style="color: #000000" color="#000000"&gt;
+    &lt;p color="#000000" style="color: #000000"&gt;
       This state diagram shows the states and transitions for each client on 
       the server. Each client session has its own state machine which is tuned 
       up as shown on the diagram.
@@ -98,19 +98,19 @@
         </metadata-list>
         <URIString>http://vue.tufts.edu/rdf/resource/d1b29fb07f00010101d479cf19a86a38</URIString>
         <richText>&lt;html&gt;
-  &lt;head style="color: #000000" color="#000000"&gt;
+  &lt;head color="#000000" style="color: #000000"&gt;
     &lt;style type="text/css"&gt;
       &lt;!--
-        body { margin-right: 0px; margin-top: 0px; font-size: 12; margin-bottom: 0px; margin-left: 0px; color: #000000; font-family: Arial }
-        ol { list-style-position: outside; margin-top: 6; font-size: 12; vertical-align: middle; margin-left: 30; font-family: Arial }
-        p { margin-right: 0; margin-top: 0; margin-bottom: 0; margin-left: 0; color: #000000 }
-        ul { list-style-position: outside; margin-top: 6; font-size: 12; vertical-align: middle; margin-left: 30; font-family: Arial }
+        body { margin-right: 0px; margin-top: 0px; margin-left: 0px; margin-bottom: 0px; font-size: 12; color: #000000; font-family: Arial }
+        ol { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 12; font-family: Arial }
+        p { margin-right: 0; margin-top: 0; margin-left: 0; margin-bottom: 0; color: #000000 }
+        ul { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 12; font-family: Arial }
       --&gt;
     &lt;/style&gt;
     
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;p style="color: #000000" color="#000000"&gt;
+    &lt;p color="#000000" style="color: #000000"&gt;
       This state diagram shows the states and transitions on the client. 
       Client session has its own state machine which is tuned up as shown on 
       the diagram.
@@ -691,19 +691,19 @@
             </metadata-list>
             <URIString>http://vue.tufts.edu/rdf/resource/d728d8db7f00010100f16568627dd10f</URIString>
             <richText>&lt;html&gt;
-  &lt;head style="color: #404040" color="#404040"&gt;
+  &lt;head color="#404040" style="color: #404040"&gt;
     &lt;style type="text/css"&gt;
       &lt;!--
-        body { margin-right: 0px; margin-top: 0px; font-size: 11; margin-bottom: 0px; margin-left: 0px; color: #404040; font-family: Arial }
-        ol { list-style-position: outside; margin-top: 6; font-size: 11; vertical-align: middle; margin-left: 30; font-family: Arial }
-        p { margin-right: 0; margin-top: 0; margin-bottom: 0; margin-left: 0; color: #404040 }
-        ul { list-style-position: outside; margin-top: 6; font-size: 11; vertical-align: middle; margin-left: 30; font-family: Arial }
+        body { margin-right: 0px; margin-top: 0px; margin-left: 0px; margin-bottom: 0px; font-size: 11; color: #404040; font-family: Arial }
+        ol { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 11; font-family: Arial }
+        p { margin-right: 0; margin-top: 0; margin-left: 0; margin-bottom: 0; color: #404040 }
+        ul { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 11; font-family: Arial }
       --&gt;
     &lt;/style&gt;
     
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;p style="color: #404040" color="#404040"&gt;
+    &lt;p color="#404040" style="color: #404040"&gt;
       Legend:
     &lt;/p&gt;
   &lt;/body&gt;
@@ -819,23 +819,23 @@
         </metadata-list>
         <URIString>http://vue.tufts.edu/rdf/resource/d72b50747f00010100f165688a383c0b</URIString>
         <richText>&lt;html&gt;
-  &lt;head style="color: #000000" color="#000000"&gt;
+  &lt;head color="#000000" style="color: #000000"&gt;
     &lt;style type="text/css"&gt;
       &lt;!--
-        body { margin-right: 0px; margin-top: 0px; font-size: 12; margin-bottom: 0px; margin-left: 0px; color: #000000; font-family: Arial }
-        ol { list-style-position: outside; margin-top: 6; font-size: 12; vertical-align: middle; margin-left: 30; font-family: Arial }
-        p { margin-right: 0; margin-top: 0; margin-bottom: 0; margin-left: 0; color: #000000 }
-        ul { list-style-position: outside; margin-top: 6; font-size: 12; vertical-align: middle; margin-left: 30; font-family: Arial }
+        body { margin-right: 0px; margin-top: 0px; margin-left: 0px; margin-bottom: 0px; font-size: 12; color: #000000; font-family: Arial }
+        ol { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 12; font-family: Arial }
+        p { margin-right: 0; margin-top: 0; margin-left: 0; margin-bottom: 0; color: #000000 }
+        ul { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 12; font-family: Arial }
       --&gt;
     &lt;/style&gt;
     
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;p style="color: #000000" color="#000000"&gt;
+    &lt;p color="#000000" style="color: #000000"&gt;
       Thread gets spawned for non-atom operations only. This means that&lt;font style="font-size:12;" face="Arial"&gt; 
       &lt;/font&gt;
     &lt;/p&gt;
-    &lt;p style="color: #000000" color="#000000"&gt;
+    &lt;p color="#000000" style="color: #000000"&gt;
       operation state is a short-term state. Client should never be in this 
       state for a long time.
     &lt;/p&gt;
@@ -1524,19 +1524,19 @@
             </metadata-list>
             <URIString>http://vue.tufts.edu/rdf/resource/dfde0ceb7f00010100f1656802f0cab9</URIString>
             <richText>&lt;html&gt;
-  &lt;head style="color: #404040" color="#404040"&gt;
+  &lt;head color="#404040" style="color: #404040"&gt;
     &lt;style type="text/css"&gt;
       &lt;!--
-        body { margin-right: 0px; margin-top: 0px; font-size: 11; margin-bottom: 0px; margin-left: 0px; color: #404040; font-family: Arial }
-        ol { list-style-position: outside; margin-top: 6; font-size: 11; vertical-align: middle; margin-left: 30; font-family: Arial }
-        p { margin-right: 0; margin-top: 0; margin-bottom: 0; margin-left: 0; color: #404040 }
-        ul { list-style-position: outside; margin-top: 6; font-size: 11; vertical-align: middle; margin-left: 30; font-family: Arial }
+        body { margin-right: 0px; margin-top: 0px; margin-left: 0px; margin-bottom: 0px; font-size: 11; color: #404040; font-family: Arial }
+        ol { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 11; font-family: Arial }
+        p { margin-right: 0; margin-top: 0; margin-left: 0; margin-bottom: 0; color: #404040 }
+        ul { list-style-position: outside; margin-top: 6; margin-left: 30; vertical-align: middle; font-size: 11; font-family: Arial }
       --&gt;
     &lt;/style&gt;
     
   &lt;/head&gt;
   &lt;body&gt;
-    &lt;p style="color: #404040" color="#404040"&gt;
+    &lt;p color="#404040" style="color: #404040"&gt;
       Legend:
     &lt;/p&gt;
   &lt;/body&gt;
@@ -2791,7 +2791,7 @@
         </metadata-list>
         <URIString>http://vue.tufts.edu/rdf/resource/d1a3fd5e7f00010101d479cf7c37b8b4</URIString>
     </layer>
-    <userZoom>1.4098751437780446</userZoom>
+    <userZoom>1.0</userZoom>
     <userOrigin x="-1014.3268" y="-119.61396"/>
     <presentationBackground>#202020</presentationBackground>
     <PathwayList currentPathway="0" revealerIndex="-1">
@@ -2862,6 +2862,6 @@
     <date>2009-07-31</date>
     <mapFilterModel/>
     <modelVersion>5</modelVersion>
-    <saveLocation>/home/zysoft/Work/Private/OfficeAgent 2</saveLocation>
-    <saveFile>/home/zysoft/Work/Private/OfficeAgent 2/State machines updated.vue</saveFile>
+    <saveLocation>/home/zysoft/Work/Private/O-D-A/doc_src_materials</saveLocation>
+    <saveFile>/home/zysoft/Work/Private/O-D-A/doc_src_materials/State machines.vue</saveFile>
 </LW-MAP>
