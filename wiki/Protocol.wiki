@@ -18,9 +18,10 @@ The protocol implements persistent connection. This means that client is continu
 
 === The protocol package ===
 
-Protocol works in binary mode and has "preamble" and the data package. Preamble is an integer (unsigned, 2 bytes length) value specifying the operation type. The package follows the preamble and its structure depends on the operation type. 
+Protocol works in binary mode and has "preamble", data size marker, and the data package. Preamble is an integer (2 bytes length) value specifying the operation type. Size marker is an integer and gets sent directly after the preamble. Package follows the size marker and its structure depends on the operation type. 
+Size marker is sent even for empty packages (with zero value).
 
-Server reply gets built in the same way - preamble and the response package. In case of error, preamble is equal to FFFF.
+Server reply gets built in the same way - preamble, size, and the response package. In case of error, preamble is equal to FFFF.
 
 
 == Client requests ==
