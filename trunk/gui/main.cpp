@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     MainWindow main;
 
     //To allow dialog to open main window when it closes, we need to
-    //connect its "accept" signal to main window show "slot"
+    //connect its "accept" signal to main window "show" slot
     //"Accept" signal gets emmited only when user is successfully authenticated
     login.connect(&login, SIGNAL(accepted()), &main, SLOT(show()));
 
