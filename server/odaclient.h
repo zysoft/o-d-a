@@ -23,6 +23,7 @@
 #include <QTcpSocket>
 #include <QtStateMachine>
 #include <QSqlDatabase>
+#include "../lib/odaprotocol/odadata.h"
 
 /*!
   Client representation class
@@ -41,9 +42,9 @@ private:
     QSqlDatabase *db;           ///< Database connection (provided by server object)
 
     void sendError(int errorCode);
-    void sendPackage(qint16 operation, char* data = NULL, int size = 0);
+    void sendPackage(qint16 operation, OdaData* package = NULL);
     qint16 getOperation();
-    void getPackage(char* data, int size);
+    OdaData* getPackage();
 
 public:
     OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket*);

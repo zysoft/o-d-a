@@ -22,7 +22,8 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QtStateMachine>
-#include "../lib/odapackages.h"
+#include "../lib/odaprotocol/odadefinitions.h"
+#include "../lib/odaprotocol/odadata.h"
 
 /*!
   Client-Server data exchange class
@@ -38,9 +39,9 @@ private:
     static QString pass;                ///< User password
 
     void emitError();
-    void sendPackage(qint16 operation, char* data = NULL, int size = 0);
+    void sendPackage(qint16 operation, OdaData* data = NULL);
     qint16 getOperation();
-    void getPackage(char* data, int size);
+    OdaData* getPackage();
 
 public:
     OdaConnection();
@@ -70,7 +71,7 @@ signals:
 
     //Operation related signals
     void op_getUserInfo();                  ///< Request to perform "Get user info" operation
-    void userMiminumInfo(SUserMinimumInfo); ///< Transmits user info package
+    void userMiminumInfo(); ///< Transmits user info package
 
 };
 

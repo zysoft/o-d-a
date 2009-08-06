@@ -22,7 +22,7 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlField>
-#include "../lib/odapackages.h"
+#include "../lib/odaprotocol/odadefinitions.h"
 #include "odaclient.h"
 
 
@@ -94,14 +94,22 @@ QString OdaClient::clientId() {
   Sends data package
 
   \param operation Operation code
-  \param data      Data package
+  \param package      Data package
 */
-void OdaClient::sendPackage(qint16 operation, char* data, int size)
+void OdaClient::sendPackage(qint16 operation, OdaData* package)
 {
     socket->write((char*)&operation, sizeof(qint16));
-    if (data != NULL)
+    qint16 size = 0;
+    if (package != NULL)
     {
-        socket->write(data, size);
+        QByteArray data = package->serialize();
+        size = data.size();
+        socket->write((char*)&size, sizeof(qint16));
+        socket->write(data.constData(), size);
+    }
+    else
+    {
+        socket->write((char*)&size, sizeof(qint16));
     }
 }
 
@@ -121,12 +129,21 @@ qint16 OdaClient::getOperation()
 /*!
   Reads data package without preamble
 
-  \param data      Data package
-  \param size      Package size
+  \return Data package
 */
-void OdaClient::getPackage(char* data, int size)
+OdaData* OdaClient::getPackage()
 {
-    socket->read(data, size);
+    qint16 size;
+    socket->read((char*)&size, sizeof(qint16));
+    if (size == 0)
+    {
+        return new OdaData();
+    }
+
+    char* datac = (char*)malloc(size);
+    socket->read(datac, size);
+    QByteArray data(datac);
+    return OdaData::unserialize(&data);
 }
 
 /*!
@@ -136,9 +153,9 @@ void OdaClient::getPackage(char* data, int size)
 */
 void OdaClient::sendError(int errorCode)
 {
-    SError err;
-    err.errorCode = errorCode;
-    sendPackage(0xFFFF, (char*)&err, sizeof(err));
+    OdaData* err = new OdaData();
+    err->set("errorCode", errorCode);
+    sendPackage(0xFFFF, err);
 }
 
 /*!
@@ -162,16 +179,18 @@ void OdaClient::onPreAuth()
         return;
     }
 
+    //Reading empty package
+    getPackage();
+
     //Authentication token generation
     QCryptographicHash hash(QCryptographicHash::Sha1);
     hash.addData(QString().setNum(rand()+rand()+rand()).toAscii());
     authToken = hash.result().toHex();
 
     //Sending authentication token package with preamble
-    SAuthPackage preAuth;
-    strcpy(preAuth.token, authToken.toAscii().data());
-
-    sendPackage(OP_AUTH_START, (char*)&preAuth, sizeof(preAuth));
+    OdaData* preAuth = new OdaData();
+    preAuth->set("token", authToken);
+    sendPackage(OP_AUTH_START, preAuth);
 }
 
 /*!
@@ -189,13 +208,12 @@ void OdaClient::onAuthenticate()
     }
     
     //Reading credentials
-    CAuthPackage credentials;
-    getPackage((char*)&credentials, sizeof(CAuthPackage));
+    OdaData* credentials = getPackage();
     
     //Searching user by database
     QSqlQuery q(*db);
     q.prepare(QString("SELECT * FROM User INNER JOIN Company ON Company.cid = User.cid WHERE User.login=? LIMIT 1"));
-    q.bindValue(0, QString(credentials.login));
+    q.bindValue(0, credentials->getString("login"));
     q.exec();
     q.first();
     QSqlRecord rec = q.record();
@@ -215,8 +233,8 @@ void OdaClient::onAuthenticate()
     //Authentication validity check
     if (!(login.length()
         && pass.length()
-        && QString(credentials.login) == login
-        && QString(credentials.password) == hash.result().toHex()
+        && credentials->getString("login") == login
+        && credentials->getString("password") == hash.result().toHex()
         ))
         {
         sendError(ERR_USER_INVALID);
@@ -228,14 +246,14 @@ void OdaClient::onAuthenticate()
     uid = rec.field("id").value().toInt();
 
     //Creating minimum info package
-    SUserMinimumInfo info;
-    info.uid = rec.field("id").value().toInt();
-    info.cid = rec.field("cid").value().toInt();
-    strcpy(info.fullName , rec.field("fullName").value().toString().toUtf8().constData());
-    strcpy(info.companyName , rec.field("companyName").value().toString().toUtf8().constData());
+    OdaData* info = new OdaData();
+    info->set("uid", rec.field("id").value().toInt());
+    info->set("cid", rec.field("cid").value().toInt());
+    info->set("fullName", rec.field("fullName").value().toString());
+    info->set("companyName", rec.field("companyName").value().toString());
 
     //Sending User Minimum Info package with preamble
-    sendPackage(OP_AUTHENTICATE, (char*)&info, sizeof(info));
+    sendPackage(OP_AUTHENTICATE, info);
 
     //Telling that authentication is successful
     emit authenticated();

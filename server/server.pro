@@ -10,8 +10,10 @@ CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
     odaserver.cpp \
-    odaclient.cpp
+    odaclient.cpp \
+    ../lib/odaprotocol/odadata.cpp
 HEADERS += odaclient.h \
     odaserver.h \
-    ../lib/odapackages.h
+    ../lib/odaprotocol/odadefinitions.h \
+    ../lib/odaprotocol/odadata.h
 include( ../lib/qtstatemachine/src/qtstatemachine.pri)

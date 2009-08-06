@@ -1,5 +1,5 @@
 /*!
-    Open Development Assistant Data Exchange Protocol constants and packages definition
+    Open Development Assistant Data Exchange Protocol constant definitions
     Copyright (C) 2009  Yuriy Zisin <zysoftik@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ODAPACKAGES_H
-#define ODAPACKAGES_H
+#ifndef ODADEFINITIONS_H
+#define ODADEFINITIONS_H
 
 #include <QString>
 #include <QHash>
@@ -56,41 +56,4 @@ enum OdaErrors
 };
 
 
-/*!
-  Server error package
-*/
-struct SError
-{
-    int errorCode;
-};
-
-/*!
-  Client Auth package
-*/
-struct CAuthPackage
-{
-    char login[50];
-    char password[255];
-};
-
-/*!
-  Server auth package
-*/
-struct SAuthPackage
-{
-    char token[255];
-};
-
-/*!
-  Server user minimum info package
-*/
-struct SUserMinimumInfo
-{
-    unsigned int uid;
-    unsigned int cid;
-    char fullName[255];
-    char companyName[255];
-};
-
-
-#endif // ODAPACKAGES_H
+#endif // ODADEFINITIONS_H
