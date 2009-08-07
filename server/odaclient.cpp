@@ -96,19 +96,28 @@ QString OdaClient::clientId() {
   \param operation Operation code
   \param package      Data package
 */
-void OdaClient::sendPackage(qint16 operation, OdaData* package)
+void OdaClient::sendPackage(qint16 operation, OdaData package)
+{
+    sendPackage(operation, true);
+
+    QByteArray data = package.serialize();
+    qint16 size = data.size();
+    socket->write((char*)&size, sizeof(qint16));
+    socket->write(data.constData(), size);
+}
+
+/*!
+  Sends data package
+
+  \param operation      Operation code
+  \param dataComesLater Idicates if the package is empty or data package comes later
+*/
+void OdaClient::sendPackage(qint16 operation, bool dataComesLater)
 {
     socket->write((char*)&operation, sizeof(qint16));
-    qint16 size = 0;
-    if (package != NULL)
+    if (!dataComesLater)
     {
-        QByteArray data = package->serialize();
-        size = data.size();
-        socket->write((char*)&size, sizeof(qint16));
-        socket->write(data.constData(), size);
-    }
-    else
-    {
+        qint16 size = 0;
         socket->write((char*)&size, sizeof(qint16));
     }
 }
@@ -131,13 +140,13 @@ qint16 OdaClient::getOperation()
 
   \return Data package
 */
-OdaData* OdaClient::getPackage()
+OdaData OdaClient::getPackage()
 {
     qint16 size;
     socket->read((char*)&size, sizeof(qint16));
     if (size == 0)
     {
-        return new OdaData();
+        return OdaData();
     }
 
     char* datac = (char*)malloc(size);
@@ -154,8 +163,8 @@ OdaData* OdaClient::getPackage()
 */
 void OdaClient::sendError(int errorCode)
 {
-    OdaData* err = new OdaData();
-    err->set("errorCode", errorCode);
+    OdaData err;
+    err.set("errorCode", errorCode);
     sendPackage(0xFFFF, err);
 }
 
@@ -189,8 +198,8 @@ void OdaClient::onPreAuth()
     authToken = hash.result().toHex();
 
     //Sending authentication token package with preamble
-    OdaData* preAuth = new OdaData();
-    preAuth->set("token", authToken);
+    OdaData preAuth;
+    preAuth.set("token", authToken);
     sendPackage(OP_AUTH_START, preAuth);
 }
 
@@ -209,12 +218,12 @@ void OdaClient::onAuthenticate()
     }
     
     //Reading credentials
-    OdaData* credentials = getPackage();
+    OdaData credentials = getPackage();
     
     //Searching user by database
     QSqlQuery q(*db);
     q.prepare(QString("SELECT * FROM User INNER JOIN Company ON Company.cid = User.cid WHERE User.login=? LIMIT 1"));
-    q.bindValue(0, credentials->getString("login"));
+    q.bindValue(0, credentials.getString("login"));
     q.exec();
     q.first();
     QSqlRecord rec = q.record();
@@ -234,8 +243,8 @@ void OdaClient::onAuthenticate()
     //Authentication validity check
     if (!(login.length()
         && pass.length()
-        && credentials->getString("login") == login
-        && credentials->getString("password") == hash.result().toHex()
+        && credentials.getString("login") == login
+        && credentials.getString("password") == hash.result().toHex()
         ))
         {
         sendError(ERR_USER_INVALID);
@@ -247,11 +256,11 @@ void OdaClient::onAuthenticate()
     uid = rec.field("id").value().toInt();
 
     //Creating minimum info package
-    OdaData* info = new OdaData();
-    info->set("uid", rec.field("id").value().toInt());
-    info->set("cid", rec.field("cid").value().toInt());
-    info->set("fullName", rec.field("fullName").value().toString());
-    info->set("companyName", rec.field("companyName").value().toString());
+    OdaData info;
+    info.set("uid", rec.field("id").value().toInt());
+    info.set("cid", rec.field("cid").value().toInt());
+    info.set("fullName", rec.field("fullName").value().toString());
+    info.set("companyName", rec.field("companyName").value().toString());
 
     //Sending User Minimum Info package with preamble
     sendPackage(OP_AUTHENTICATE, info);

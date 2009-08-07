@@ -42,9 +42,10 @@ private:
     QSqlDatabase *db;           ///< Database connection (provided by server object)
 
     void sendError(int errorCode);
-    void sendPackage(qint16 operation, OdaData* package = NULL);
+    void sendPackage(qint16 operation, OdaData package);
+    void sendPackage(qint16 operation, bool dataComesLater = false);
     qint16 getOperation();
-    OdaData* getPackage();
+    OdaData getPackage();
 
 public:
     OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket*);
