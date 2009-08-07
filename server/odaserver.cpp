@@ -16,7 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
 #include <QDateTime>
 #include <QtCore/QCoreApplication>
 #include "odaserver.h"
@@ -68,6 +67,8 @@ void OdaServer::clientConnected()
     clientId = clientConnection->peerAddress().toString() + QDateTime(QDateTime::currentDateTime()).toString("yyyyMMddhhmmsszzz");
     OdaClient* client = new OdaClient(clientId, &db , clientConnection);
     connect(client, SIGNAL(clientDisconnected()), this, SLOT(clientDisconnected()));
+    connect(client, SIGNAL(route(qint16, unsigned int, OdaData)), this, SLOT(onSignalRoute(qint16, unsigned int, OdaData)));
+    client->connect(this, SIGNAL(signalRoute(qint16, unsigned int, OdaData)), client, SLOT(onRoute(qint16, unsigned int, OdaData)));
     clients[client->clientId()] = client;
 }
 
@@ -79,4 +80,16 @@ void OdaServer::clientDisconnected()
 {
     OdaClient* client = static_cast<OdaClient*>(sender());
     clients.remove(client->clientId());
+}
+
+/*!
+  Takes an action when client asks for routing
+
+  \param operation      Operation getting routed
+  \param uid            UID rout is addressed to
+  \param dataPack       Data package enclosed to operation
+*/
+void OdaServer::onSignalRoute(qint16 operation, unsigned int uid, OdaData dataPack)
+{
+    emit signalRoute(operation, uid, dataPack);
 }

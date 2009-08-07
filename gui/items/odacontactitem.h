@@ -1,5 +1,5 @@
 /*!
-    Open Development Assistant Gui
+    Open Development Assistant. Contact representation item
     Copyright (C) 2009  Yuriy Zisin <zysoftik@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -16,29 +16,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QtGui/QApplication>
-#include <QCache>
-#include "loginwindow.h"
-#include "mainwindow.h"
-#include "protocol/odaconnection.h"
+#ifndef ODACONTACTITEM_H
+#define ODACONTACTITEM_H
+
+#include <QListWidgetItem>
 
 /*!
-  Main function
+  Contact representation item
+  Represents user in contact list for QListWidget component
 */
-int main(int argc, char *argv[])
+class OdaContactItem : public QListWidgetItem
 {
-    QApplication a(argc, argv);
-    a.setApplicationName("Oda");
-    a.setOrganizationName("Open Development Assistant");
+private:
+    int UID;    ///< User id
+public:
+    OdaContactItem();
+    void setUid(int userId);
+    int uid();
+};
 
-    LoginWindow login;
-    MainWindow main;
-
-    //To allow dialog to open main window when it closes, we need to
-    //connect its "accept" signal to main window "show" slot
-    //"Accept" signal gets emmited only when user is successfully authenticated
-    login.connect(&login, SIGNAL(accepted()), &main, SLOT(show()));
-
-    login.show();
-    return a.exec();
-}
+#endif // ODACONTACTITEM_H

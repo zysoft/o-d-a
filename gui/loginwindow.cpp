@@ -31,7 +31,7 @@ LoginWindow::LoginWindow(QWidget *parent)
     : QDialog(parent), ui(new Ui::LoginWindow)
 {
     ui->setupUi(this);
-    client = new OdaConnection();
+    client = OdaConnection::getInstance();
     connect(client, SIGNAL(error(QString)), this, SLOT(onClientError(QString)));
     connect(client, SIGNAL(authenticated()), this, SLOT(onAuthSuccess()));
 

@@ -36,6 +36,7 @@ class OdaClient : public QObject
 private:
     QString uCid;               ///< Unique client id (object id in server hash)
     unsigned int uid;           ///< User unique id
+    unsigned int cid;           ///< User company id
     QTcpSocket* socket;         ///< Client socket
     QtStateMachine stateMachine;///< Client state machine
     QString authToken;          ///< Authentication token (generated for each connection)
@@ -52,21 +53,27 @@ public:
     QString clientId();
 
 private slots:
-    void onDisconnect();        ///< Slot that takes an action on client disconnect
+    void onDisconnect();                         ///< Slot that takes an action on client disconnect
+    void onRoute(qint16, unsigned int, OdaData); ///< Slot that takse an action on server request routing
 
     // Methods processing the states
     void onPreAuth();           ///< Slot that process "Pre-auth" state
     void onAuthenticate();      ///< Slot that process "Authentication" state
     void onCommand();           ///< Slot that process "Command route" state
     void onGetUserInfo();       ///< Slot that process "GetUserInfo" command
+    void onGetContactList();    ///< Slot that process "GetContactList" command
+    void onSendMessage();       ///< Slot that process "SendMessage" command
 
 signals:
-    void authenticated();       ///< Signal that indicates authentication success
-    void commandUnknown();      ///< Signal that indicates unknow command
-    void commandDone();         ///< Signal that indicates command processing end
-    void clientDisconnected();  ///< Signal that indicates client socket disconnect
+    void route(qint16, unsigned int, OdaData);   ///< Routing signal
+    void authenticated();                        ///< Signal that indicates authentication success
+    void commandUnknown();                       ///< Signal that indicates unknow command
+    void commandDone();                          ///< Signal that indicates command processing end
+    void clientDisconnected();                   ///< Signal that indicates client socket disconnect
 
-    void getUserInfo();         ///< Signal that indicates getUserInfo operation
+    void getUserInfo();                 ///< Signal that indicates getUserInfo operation
+    void getContactList();              ///< Signal that indicates getContactList operation
+    void sendMessage();                 ///< Signal that indicates sendMessage operation
 
 };
 

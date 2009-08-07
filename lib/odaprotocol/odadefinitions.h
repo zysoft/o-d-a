@@ -56,4 +56,14 @@ enum OdaErrors
 };
 
 
+/*!
+  Error codes enum
+*/
+enum OdaContactTypes
+{
+    COMPANY_CONTACTS,
+    OFFICE_CONTACTS,
+    TEAM_CONTACTS
+};
+
 #endif // ODADEFINITIONS_H

@@ -32,8 +32,8 @@ class OdaServer : public QObject
 {
     Q_OBJECT
 private:
-    QTcpServer  socket; ///< Listening socket
-    QSqlDatabase db;    ///< Service database connection
+    QTcpServer  socket;                 ///< Listening socket
+    QSqlDatabase db;                    ///< Service database connection
     QHash<QString, OdaClient*> clients; ///< List of active clients
 
 public:
@@ -44,6 +44,10 @@ public:
 private slots:
     void clientConnected();
     void clientDisconnected();
+    void onSignalRoute(qint16, unsigned int, OdaData);
+
+signals:
+    void signalRoute(qint16, unsigned int, OdaData);    ///< Signal for data routing between connected clients
 };
 
 #endif // ODASERVER_H

@@ -26,6 +26,7 @@
 #include "odaclient.h"
 
 
+
 /*!
   Constructor
   Fills in client settings
@@ -49,6 +50,8 @@ OdaClient::OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket* sock)
     QtState *commandWait = new QtState();
     QtState *commandRoute = new QtState();
     QtState *doingUserInfo = new QtState();
+    QtState *doingContactList = new QtState();
+    QtState *doingSendMessage = new QtState();
     
     //Creating state transitions
     init->addTransition(socket, SIGNAL(readyRead()), preAuth);
@@ -57,14 +60,20 @@ OdaClient::OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket* sock)
     commandWait->addTransition(socket, SIGNAL(readyRead()), commandRoute);
     commandRoute->addTransition(this, SIGNAL(commandUnknown()), commandWait);
     commandRoute->addTransition(this, SIGNAL(getUserInfo()), doingUserInfo);
+    commandRoute->addTransition(this, SIGNAL(getContactList()), doingContactList);
+    commandRoute->addTransition(this, SIGNAL(sendMessage()), doingSendMessage);
     doingUserInfo->addTransition(this, SIGNAL(commandDone()), commandWait);
-    
+    doingContactList->addTransition(this, SIGNAL(commandDone()), commandWait);
+    doingSendMessage->addTransition(this, SIGNAL(commandDone()), commandWait);
+
     //Assingning event handlers
     preAuth->invokeMethodOnEntry(this, "onPreAuth");
     authentication->invokeMethodOnEntry(this, "onAuthenticate");
     commandRoute->invokeMethodOnEntry(this, "onCommand");
     doingUserInfo->invokeMethodOnEntry(this, "onGetUserInfo");
-    
+    doingContactList->invokeMethodOnEntry(this, "onGetContactList");
+    doingSendMessage->invokeMethodOnEntry(this, "onSendMessage");
+
     //Filling up state machine
     stateMachine.addState(init);
     stateMachine.addState(preAuth);
@@ -72,7 +81,9 @@ OdaClient::OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket* sock)
     stateMachine.addState(commandWait);
     stateMachine.addState(commandRoute);
     stateMachine.addState(doingUserInfo);
-    
+    stateMachine.addState(doingContactList);
+    stateMachine.addState(doingSendMessage);
+
 
     //Running the state machine
     stateMachine.setInitialState(init);
@@ -177,6 +188,36 @@ void OdaClient::onDisconnect() {
 }
 
 /*!
+  Special router.
+  Takes an action when server performs signal routing between currently active clients for data exchange
+
+  \param operation      Operation getting routed
+  \param targetUserId   UID rout is addressed to
+  \param dataPack       Data package enclosed to operation
+*/
+void OdaClient::onRoute(qint16 operation, unsigned int targetUserId, OdaData dataPack)
+{
+    //Skip if this is not for iur user
+    if (targetUserId != uid)
+    {
+        return;
+    }
+
+    //Lookup how to route (routed operations only!)
+    switch (operation)
+    {
+    //When we have SEND MESSAGE, we just forward that message to client
+    case OP_SEND_MESSAGE:
+        OdaData message;
+        message.set("uid", dataPack.get("from"));
+        message.set("message", dataPack.getString("message"));
+        sendPackage(OP_SEND_MESSAGE, message);
+        break;
+    }
+
+}
+
+/*!
   Slot. Gets executed on entering "Pre-Auth" state
   Checks operation code, generates and sends authentication token
 */
@@ -253,11 +294,12 @@ void OdaClient::onAuthenticate()
     }
 
     //Setting user Unique Identifier
-    uid = rec.field("id").value().toInt();
+    uid = rec.field("uid").value().toInt();
+    cid = rec.field("cid").value().toInt();
 
     //Creating minimum info package
     OdaData info;
-    info.set("uid", rec.field("id").value().toInt());
+    info.set("uid", rec.field("uid").value().toInt());
     info.set("cid", rec.field("cid").value().toInt());
     info.set("fullName", rec.field("fullName").value().toString());
     info.set("companyName", rec.field("companyName").value().toString());
@@ -282,6 +324,14 @@ void OdaClient::onCommand()
         emit getUserInfo();
         break;
 
+    case OP_GET_CONTACTS:
+        emit getContactList();
+        break;
+
+    case OP_SEND_MESSAGE:
+        emit sendMessage();
+        break;
+
     default:
         //Ignore command if we can't process it
         socket->readAll();
@@ -293,8 +343,68 @@ void OdaClient::onCommand()
 /*!
   Slot. Gets executed on OP_GET_USER_INFO command
   Collects user info and sends user info package
+
+  \todo Needs to be implemented
 */
 void OdaClient::onGetUserInfo()
 {
+    emit commandDone();
+}
+
+
+/*!
+  Slot. Gets executed on OP_GET_CONTACTS command
+  Collects user contacts and sends contacts package
+
+  \todo Implement team contacts retrival
+*/
+void OdaClient::onGetContactList()
+{
+    OdaData request = getPackage();
+
+    //Searching contacts by database
+    QSqlQuery q(*db);
+    QString query = "SELECT * FROM User WHERE uid <> " + QString().setNum(uid);
+
+    if (request.getInt("contactsType") == COMPANY_CONTACTS)
+    {
+        query += " AND cid = " + QString().setNum(cid);
+    }
+
+    q.exec(query);
+
+    OdaData contacts;
+    contacts.set("count", q.size());
+    qint16 i = 0;
+
+    while(q.next())
+    {
+        QSqlRecord rec = q.record();
+        OdaData contact;
+        contact.set("uid", rec.field("uid").value().toInt());
+        contact.set("fullName", rec.field("fullName").value().toString());
+        contacts.setObject(QString("contact").append(QString().setNum(i++)), contact);
+    }
+
+    sendPackage(OP_GET_CONTACTS, contacts);
+
+    emit commandDone();
+}
+
+/*!
+  Receives complex message package and forwards message to other clients
+*/
+void OdaClient::onSendMessage()
+{
+    OdaData message = getPackage();
+    int count = message.getInt("count");
+    for (int i=0; i<count; i++)
+    {
+        OdaData msg;
+        msg.set("from", uid);
+        msg.set("message", message.getString("message"));
+        int targetUid = message.getInt("uid"+QString().setNum(i));
+        emit route(OP_SEND_MESSAGE, targetUid, msg);
+    }
     emit commandDone();
 }

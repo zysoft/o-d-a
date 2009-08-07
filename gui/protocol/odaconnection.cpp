@@ -42,6 +42,8 @@ OdaConnection::OdaConnection()
     QtState *dataWait = new QtState();
     QtState *dataRoute = new QtState();
     QtState *getUserInfo = new QtState();
+    QtState *getContactList = new QtState();
+    QtState *getMessage = new QtState();
 
     preInit->addTransition(&socket, SIGNAL(connected()), init);
     init->addTransition(&socket, SIGNAL(readyRead()), authStep1);
@@ -51,7 +53,11 @@ OdaConnection::OdaConnection()
     authStep2->addTransition(this, SIGNAL(error(QString)), preInit);
     dataWait->addTransition(&socket, SIGNAL(readyRead()), dataRoute);
     dataRoute->addTransition(this, SIGNAL(op_getUserInfo()), getUserInfo);
+    dataRoute->addTransition(this, SIGNAL(op_getContactList()), getContactList);
+    dataRoute->addTransition(this, SIGNAL(op_getMessage()), getMessage);
     getUserInfo->addTransition(this, SIGNAL(commandDone()), dataWait);
+    getContactList->addTransition(this, SIGNAL(commandDone()), dataWait);
+    getMessage->addTransition(this, SIGNAL(commandDone()), dataWait);
 
 
     init->invokeMethodOnEntry(this, "onInit");
@@ -59,6 +65,8 @@ OdaConnection::OdaConnection()
     authStep2->invokeMethodOnEntry(this, "onAuthStep2");
     dataRoute->invokeMethodOnEntry(this, "onData");
     getUserInfo->invokeMethodOnEntry(this, "doGetUserInfo");
+    getContactList->invokeMethodOnEntry(this, "doGetContactList");
+    getMessage->invokeMethodOnEntry(this, "doGetMessage");
 
     stateMachine.addState(preInit);
     stateMachine.addState(init);
@@ -67,6 +75,8 @@ OdaConnection::OdaConnection()
     stateMachine.addState(dataWait);
     stateMachine.addState(dataRoute);
     stateMachine.addState(getUserInfo);
+    stateMachine.addState(getContactList);
+    stateMachine.addState(getMessage);
 
     stateMachine.setInitialState(preInit);
     stateMachine.initialState();
@@ -74,6 +84,32 @@ OdaConnection::OdaConnection()
 
     connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketError(QAbstractSocket::SocketError)));
 }
+
+
+/*!
+  Removes self instance
+*/
+OdaConnection::~OdaConnection()
+{
+    if (self != 0)
+    {
+        delete self;
+    }
+}
+
+/*!
+  Returns self instance
+*/
+OdaConnection* OdaConnection::getInstance()
+{
+    if (self == 0)
+    {
+        self = new OdaConnection();
+    }
+
+    return self;
+}
+
 
 /*!
   Initiates server session
@@ -256,7 +292,7 @@ void OdaConnection::onAuthStep2()
         return;
     }
 
-    OdaData info;
+    OdaData info = getPackage();
 
     emit userMiminumInfo();
     emit authenticated();
@@ -273,6 +309,13 @@ void OdaConnection::onData()
     case OP_GET_USER_INFO:
         emit op_getUserInfo();
         break;
+    case OP_GET_CONTACTS:
+        emit op_getContactList();
+        break;
+    case OP_SEND_MESSAGE:
+        emit op_getMessage();
+        break;
+
     default:
         socket.readAll();
         emit commandUnknown();
@@ -294,6 +337,33 @@ void OdaConnection::doGetUserInfo()
 
 
 /*!
+  Performs user contacts list package read
+*/
+void OdaConnection::doGetContactList()
+{
+    OdaData contacts = getPackage();
+
+    emit userContactList(contacts);
+    emit commandDone();
+
+}
+
+
+/*!
+  Performs user message package read
+*/
+void OdaConnection::doGetMessage()
+{
+    OdaData message = getPackage();
+
+    emit userMessage(message);
+    emit commandDone();
+
+}
+
+
+
+/*!
   Requests user info from server
 
   \todo Needs to be implemented
@@ -304,9 +374,47 @@ void OdaConnection::requestUserInfo()
 }
 
 
+/*!
+  Requests contacts list from server
+
+  \param contactType Identifies contact type required (compant, office, team)
+  \param pid         Project id to get contast for (in case contactType = TEAM_CONTACTS
+*/
+void OdaConnection::requestContactList(int contactType, int pid)
+{
+    OdaData request;
+    request.set("contactsType", contactType);
+    request.set("pid", pid);
+    sendPackage(OP_GET_CONTACTS, request);
+}
+
+/*!
+  Sends a message to users
+
+  \param uids       User ids to send message to
+  \param message    Message text
+*/
+void OdaConnection::sendChatMessage(QVector<int> uids, QString message)
+{
+    OdaData msg;
+
+    int count = uids.count();
+    msg.set("message", message);
+    msg.set("count", count);
+    for (int i=0; i<count; i++)
+    {
+        msg.set("uid"+QString().setNum(i), uids.at(i));
+    }
+
+    sendPackage(OP_SEND_MESSAGE, msg);
+}
+
+
 //Static properties declaration
 bool OdaConnection::isInitialized;
 QtStateMachine OdaConnection::stateMachine;
 QTcpSocket OdaConnection::socket;
 QString OdaConnection::login;
 QString OdaConnection::pass;
+
+OdaConnection* OdaConnection::self = 0;
