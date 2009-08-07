@@ -101,7 +101,7 @@ void OdaClient::sendPackage(qint16 operation, OdaData package)
     sendPackage(operation, true);
 
     QByteArray data = package.serialize();
-    qint16 size = data.size();
+    qint16 size = data.size()+1; //+1 is to always send \0
     socket->write((char*)&size, sizeof(qint16));
     socket->write(data.constData(), size);
 }
