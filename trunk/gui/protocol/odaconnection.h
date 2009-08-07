@@ -39,9 +39,10 @@ private:
     static QString pass;                ///< User password
 
     void emitError();
-    void sendPackage(qint16 operation, OdaData* data = NULL);
+    void sendPackage(qint16 operation, OdaData data);
+    void sendPackage(qint16 operation, bool dataComesLater = false);
     qint16 getOperation();
-    OdaData* getPackage();
+    OdaData getPackage();
 
 public:
     OdaConnection();

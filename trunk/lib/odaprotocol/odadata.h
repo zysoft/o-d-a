@@ -32,21 +32,24 @@
 class OdaData : public QObject
 {
 private:
-    QHash<QString, QVariant> data;          ///< Scalar properties
-    QHash<QString, OdaData* > packages;  ///< Object properties
+    QHash<QString, QVariant> scalars;          ///< Scalar properties
+    QHash<QString, OdaData > objects;          ///< Object properties
 public:
     OdaData();
+    OdaData(const OdaData&);
 
     void set(QString, QVariant);
-    void setObject(QString, OdaData*);
+    void setObject(QString, OdaData);
 
     QVariant get(QString);
     int getInt(QString);
     QString getString(QString);
-    OdaData* getObject(QString);
+    OdaData getObject(QString);
 
     QByteArray serialize();
-    static OdaData* unserialize(QByteArray*);
+    static OdaData unserialize(QByteArray*);
+
+    OdaData& operator=(const OdaData& foreign);
 };
 
 #endif // ODADATA_H

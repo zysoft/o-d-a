@@ -102,9 +102,9 @@ void OdaConnection::initiate(QString host, int port, QString loginName, QString 
 */
 void OdaConnection::emitError()
 {
-    OdaData* err = getPackage();
+    OdaData err = getPackage();
 
-    switch (err->getInt("errorCode"))
+    switch (err.getInt("errorCode"))
     {
     case ERR_PREAMBLE_INVALID :
         emit error(tr("Protocol violation"));
@@ -125,24 +125,32 @@ void OdaConnection::emitError()
   \param operation Operation code
   \param package      Data package
 */
-void OdaConnection::sendPackage(qint16 operation, OdaData* package)
+void OdaConnection::sendPackage(qint16 operation, OdaData package)
+{
+    sendPackage(operation, true);
+
+    QByteArray data = package.serialize();
+    qint16 size = data.size();
+    socket.write((char*)&size, sizeof(qint16));
+    socket.write(data.constData(), size);
+}
+
+/*!
+  Sends data package
+
+  \param operation      Operation code
+  \param dataComesLater Idicates if the package is empty or data package comes later
+*/
+void OdaConnection::sendPackage(qint16 operation, bool dataComesLater)
 {
     socket.write((char*)&operation, sizeof(qint16));
-    qint16 size = 0;
-    if (package != NULL)
+    if (!dataComesLater)
     {
-
-
-        QByteArray data = package->serialize();
-        size = data.size();
-        socket.write((char*)&size, sizeof(qint16));
-        socket.write(data.constData(), size);
-    }
-    else
-    {
+        qint16 size = 0;
         socket.write((char*)&size, sizeof(qint16));
     }
 }
+
 
 /*!
   Reads operation code
@@ -162,13 +170,13 @@ qint16 OdaConnection::getOperation()
 
   \return Data package
 */
-OdaData* OdaConnection::getPackage()
+OdaData OdaConnection::getPackage()
 {
     qint16 size;
     socket.read((char*)&size, sizeof(qint16));
     if (size == 0)
     {
-        return new OdaData();
+        return OdaData();
     }
 
     char* datac = (char*)malloc(size);
@@ -220,17 +228,17 @@ void OdaConnection::onAuthStep1()
         return;
     }
 
-    OdaData* preAuth = getPackage();
+    OdaData preAuth = getPackage();
 
     QCryptographicHash hash(QCryptographicHash::Sha1);
     hash.addData(pass.toUtf8());
     QString psw = hash.result().toHex();
     hash.reset();
-    hash.addData(QString(preAuth->getString("token")+psw).toAscii());
+    hash.addData(QString(preAuth.getString("token")+psw).toAscii());
 
-    OdaData *auth = new OdaData();
-    auth->set("login" , login);
-    auth->set("password" , hash.result().toHex());
+    OdaData auth;
+    auth.set("login" , login);
+    auth.set("password" , hash.result().toHex());
 
     sendPackage(OP_AUTHENTICATE, auth);
 }
@@ -248,7 +256,7 @@ void OdaConnection::onAuthStep2()
         return;
     }
 
-    OdaData* info = getPackage();
+    OdaData info;
 
     emit userMiminumInfo();
     emit authenticated();
@@ -279,7 +287,7 @@ void OdaConnection::onData()
 */
 void OdaConnection::doGetUserInfo()
 {
-    OdaData* info = getPackage();
+    OdaData info = getPackage();
     emit commandDone();
 
 }

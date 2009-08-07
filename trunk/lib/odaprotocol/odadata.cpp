@@ -27,6 +27,17 @@ OdaData::OdaData()
 }
 
 /*!
+  Copy constructor
+
+  \param foreign Foreign data package to copy into current
+*/
+OdaData::OdaData(const OdaData& foreign) : QObject()
+{
+    *this = foreign;
+}
+
+
+/*!
   Adds/sets scalar property
 
   \param name Property name
@@ -34,7 +45,7 @@ OdaData::OdaData()
 */
 void OdaData::set(QString name, QVariant value)
 {
-    data[name] = value;
+    scalars[name] = value;
 }
 
 /*!
@@ -43,9 +54,9 @@ void OdaData::set(QString name, QVariant value)
   \param name Property name
   \param value Object
 */
-void OdaData::setObject(QString name, OdaData* value)
+void OdaData::setObject(QString name, OdaData value)
 {
-    packages.insert(name, value);
+    objects.insert(name, value);
 }
 
 /*!
@@ -55,9 +66,9 @@ void OdaData::setObject(QString name, OdaData* value)
 */
 QVariant OdaData::get(QString name)
 {
-    if (data.find(name) != data.end())
+    if (scalars.find(name) != scalars.end())
     {
-        return data.value(name);
+        return scalars.value(name);
     }
     return QVariant();
 }
@@ -88,9 +99,9 @@ QString OdaData::getString(QString name)
 
   \param name Property name
 */
-OdaData* OdaData::getObject(QString name)
+OdaData OdaData::getObject(QString name)
 {
-    return packages.value(name);
+    return objects.value(name);
 }
 
 /*!
@@ -103,7 +114,7 @@ QByteArray OdaData::serialize()
     QByteArray serial;
 
     //Going through the scalar properties
-    QHashIterator<QString, QVariant> i(data);
+    QHashIterator<QString, QVariant> i(scalars);
     i.toFront();
     while (i.hasNext())
     {
@@ -115,7 +126,7 @@ QByteArray OdaData::serialize()
     }
 
     //Going through the object properties
-    QHashIterator<QString, OdaData*> j(packages);
+    QHashIterator<QString, OdaData> j(objects);
     j.toFront();
     while (j.hasNext())
     {
@@ -124,7 +135,7 @@ QByteArray OdaData::serialize()
         serial.append(j.key());
         serial.append(SPLIT_MARKER);
         serial.append(OBJECT_MARKER);
-        serial.append(packages[j.key()]->serialize().toBase64());
+        serial.append(objects[j.key()].serialize().toBase64());
     }
 
     return serial;
@@ -136,10 +147,10 @@ QByteArray OdaData::serialize()
   \param  serial QByteArray with serialized object
   \return Initialized Universal package object
 */
-OdaData* OdaData::unserialize(QByteArray* serial)
+OdaData OdaData::unserialize(QByteArray* serial)
 {
 
-    OdaData* package = new OdaData();
+    OdaData package;
 
     int pos = serial->indexOf(SPLIT_MARKER)+1;
     int nextPos;
@@ -173,15 +184,25 @@ OdaData* OdaData::unserialize(QByteArray* serial)
         {
             //Initializing object property if the value is object property
             QByteArray serialized = QByteArray().fromBase64(value.toAscii());
-            package->setObject(key, OdaData::unserialize(&serialized));
+            package.setObject(key, OdaData::unserialize(&serialized));
         }
         else
         {
             //Setting retrieved protperty into the package
-            package->set(key, value);
+            package.set(key, value);
         }
 
         pos = nextPos;
     }
     return package;
+}
+
+/*!
+  = operator
+*/
+OdaData& OdaData::operator=(const OdaData& foreign)
+{
+    scalars = foreign.scalars;
+    objects = foreign.objects;
+    return *this;
 }
