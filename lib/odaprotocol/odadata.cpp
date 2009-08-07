@@ -178,17 +178,15 @@ OdaData OdaData::unserialize(QByteArray* serial)
         }
 
         //Retrieving value
-        QString value = QString().fromUtf8(QByteArray().fromBase64(serial->mid(pos, nextPos - pos - 1)));
-
         if (isObject)
         {
             //Initializing object property if the value is object property
-            QByteArray serialized = QByteArray().fromBase64(value.toAscii());
+            QByteArray serialized = QByteArray().fromBase64(serial->mid(pos, nextPos - pos - 1));
             package.setObject(key, OdaData::unserialize(&serialized));
         }
         else
         {
-            //Setting retrieved protperty into the package
+            QString value = QString().fromUtf8(QByteArray().fromBase64(serial->mid(pos, nextPos - pos - 1)));
             package.set(key, value);
         }
 
