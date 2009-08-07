@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QtStateMachine>
+#include <QVector>
 #include "../lib/odaprotocol/odadefinitions.h"
 #include "../lib/odaprotocol/odadata.h"
 
@@ -32,11 +33,15 @@ class OdaConnection : public QObject
 {
     Q_OBJECT
 private:
+    OdaConnection();
+    ~OdaConnection();
+
     static bool isInitialized;          ///< Indicate object reinitialization
     static QtStateMachine stateMachine; ///< Client state machine
     static QTcpSocket socket;           ///< Connection socket
     static QString login;               ///< User login
     static QString pass;                ///< User password
+    static OdaConnection* self;         ///< Self instance
 
     void emitError();
     void sendPackage(qint16 operation, OdaData data);
@@ -45,11 +50,13 @@ private:
     OdaData getPackage();
 
 public:
-    OdaConnection();
-    void initiate(QString host, int port, QString loginName, QString passw);
-    QTcpSocket* sock();
 
+    static OdaConnection* getInstance();
+
+    void initiate(QString host, int port, QString loginName, QString passw);
     void requestUserInfo();
+    void requestContactList(int contactType = COMPANY_CONTACTS, int pid = 0);
+    void sendChatMessage(QVector<int>, QString);
 
 
 private slots:
@@ -62,6 +69,8 @@ private slots:
 
     //Operation processors
     void doGetUserInfo();
+    void doGetContactList();
+    void doGetMessage();
 
 signals:
     //Main signals
@@ -72,7 +81,12 @@ signals:
 
     //Operation related signals
     void op_getUserInfo();                  ///< Request to perform "Get user info" operation
-    void userMiminumInfo(); ///< Transmits user info package
+    void op_getContactList();               ///< Request to perform "Get contact list" operation
+    void op_getMessage();                   ///< Request to process "Send message" operation
+
+    void userMiminumInfo();                 ///< Transmits user info package
+    void userContactList(OdaData);          ///< Transmits user contacts list
+    void userMessage(OdaData);              ///< Transmits user message
 
 };
 
