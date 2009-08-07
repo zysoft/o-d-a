@@ -122,7 +122,7 @@ QByteArray OdaData::serialize()
         serial.append(SPLIT_MARKER);
         serial.append(i.key());
         serial.append(SPLIT_MARKER);
-        serial.append(i.value().toByteArray().toBase64());
+        serial.append(i.value().toString().toUtf8().toBase64());
     }
 
     //Going through the object properties
