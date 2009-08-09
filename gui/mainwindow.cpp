@@ -87,9 +87,10 @@ void MainWindow::onChatMessage(OdaData msg)
         OdaContactItem* item = static_cast<OdaContactItem*>(m_ui->contactList->item(i));
         if (item->uid() == muid)
         {
-            chat.reset();
-            chat.addUser(item);
-            chat.onMessage(msg);
+            if (chat.addUser(item))
+            {
+                chat.onMessage(msg);
+            }
             chat.show();
             return;
          }
@@ -114,10 +115,14 @@ void MainWindow::onContactList(OdaData contacts)
     }
 }
 
+/*!
+  Opens a chat with selected user
+
+  \param item Selected user
+*/
 void MainWindow::on_contactList_itemDoubleClicked(QListWidgetItem* item)
 {
     OdaContactItem* contact = static_cast<OdaContactItem*>(item);
-    chat.reset();
     chat.addUser(contact);
     chat.show();
 }
