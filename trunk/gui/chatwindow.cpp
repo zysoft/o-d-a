@@ -18,6 +18,7 @@
 
 #include <QVector>
 #include <QMessageBox>
+#include <QLabel>
 #include "chatwindow.h"
 #include "ui_chatwindow.h"
 
@@ -31,6 +32,8 @@ ChatWindow::ChatWindow(QWidget *parent) :
         m_ui(new Ui::ChatWindow)
 {
     m_ui->setupUi(this);
+    m_ui->tabs->clear();
+    delete m_ui->tab;
 
     client = OdaConnection::getInstance();
     connect(client, SIGNAL(userMessage(OdaData)), this, SLOT(onMessage(OdaData)));
@@ -60,23 +63,29 @@ void ChatWindow::changeEvent(QEvent *e)
 }
 
 /*!
-  Resets chat window and prepares it to setup
-*/
-void ChatWindow::reset()
-{
-    setWindowTitle(tr("Chat with:"));
-    users.empty();
-}
-
-/*!
   Adds user to chat
 
   \param user User contact item
+  \return     Result state (true - user added, false - already exists)
 */
-void ChatWindow::addUser(OdaContactItem* user)
+bool ChatWindow::addUser(OdaContactItem* user)
 {
+    if (tabs.find(user->uid()) != tabs.end())
+    {
+        return false;
+    }
+
+    QWidget* tab = new QWidget();
+    QHBoxLayout* lay = new QHBoxLayout(tab);
+    QTextEdit* t = new QTextEdit(tab);
+    t->setReadOnly(true);
+    lay->addWidget(t);
+    tab->setLayout(lay);
+    m_ui->tabs->addTab(tab, user->text());
+    tabs.insert(user->uid(), tab);
     users.insert(user->uid(), user);
-    setWindowTitle(windowTitle()+user->text()+", ");
+    m_ui->tabs->setCurrentIndex(m_ui->tabs->indexOf(tab));
+    return true;
 }
 
 /*!
@@ -103,7 +112,8 @@ void ChatWindow::onMessage(OdaData msg)
         return;
     }
 
-    m_ui->messages->append("<b>"+users[uid]->text()+":</b><br/>"+msg.getString("message")+"<hr/>");
+    tabs[uid]->findChild<QTextEdit*>()->append("<b>"+users[uid]->text()+":</b><br/>"+msg.getString("message")+"<hr/>");
+    m_ui->tabs->setCurrentIndex(m_ui->tabs->indexOf(tabs[uid]));
 }
 
 /*!
@@ -116,9 +126,10 @@ void ChatWindow::on_send_clicked()
         return;
     }
 
-    m_ui->messages->append("<b>Me:</b><br/>"+m_ui->myMessage->toPlainText()+"<hr/>");
+    m_ui->tabs->currentWidget()->findChild<QTextEdit*>()->append("<b>Me:</b><br/>"+m_ui->myMessage->toPlainText()+"<hr/>");
 
-    QVector<int> uids = QVector<int>::fromList(users.keys());
+    QVector<int> uids;
+    uids << tabs.key(m_ui->tabs->currentWidget());
     client->sendChatMessage(uids, m_ui->myMessage->toPlainText());
     m_ui->myMessage->clear();
 }

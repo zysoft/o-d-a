@@ -41,8 +41,7 @@ class ChatWindow : public QMainWindow {
 public:
     ChatWindow(QWidget *parent = 0);
     ~ChatWindow();
-    void reset();
-    void addUser(OdaContactItem* user);
+    bool addUser(OdaContactItem* user);
 
 protected:
     void changeEvent(QEvent *e);
@@ -50,6 +49,7 @@ protected:
 private:
     Ui::ChatWindow *m_ui;
     QHash<int, OdaContactItem*> users;
+    QHash<int, QWidget*> tabs;
     OdaConnection* client;
 
 private slots:
