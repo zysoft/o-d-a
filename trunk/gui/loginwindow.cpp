@@ -32,7 +32,6 @@ LoginWindow::LoginWindow(QWidget *parent)
 {
     ui->setupUi(this);
     client = OdaConnection::getInstance();
-    connect(client, SIGNAL(error(QString)), this, SLOT(onClientError(QString)));
     connect(client, SIGNAL(authenticated()), this, SLOT(onAuthSuccess()));
 
     QSettings config;
@@ -64,13 +63,6 @@ void LoginWindow::on_doLogin_clicked()
     client->initiate(config.value("server/host").toString(), config.value("server/port").toInt(), ui->login->text(), ui->password->text());
 }
 
-/*!
-  Takes an action on OdaConnection errors (both socket and its own)
-*/
-void LoginWindow::onClientError(QString error)
-{
-    QMessageBox::critical(this, tr("Error"), error);
-}
 
 /*!
   Takes an action when session is successfully intiated (user authenticated)

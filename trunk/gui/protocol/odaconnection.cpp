@@ -237,6 +237,7 @@ void OdaConnection::onSocketError(QAbstractSocket::SocketError errorCode)
     case QAbstractSocket::RemoteHostClosedError:
     case QAbstractSocket::SocketTimeoutError:
     case QAbstractSocket::NetworkError:
+        emit disconnected();
         break;
     default:
         emit error(socket.errorString());

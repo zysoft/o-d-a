@@ -53,6 +53,7 @@ private:
     OdaConnection* client;
 
 private slots:
+    void on_tabs_tabCloseRequested(int index);
     void on_send_clicked();
     void onError(QString);
 

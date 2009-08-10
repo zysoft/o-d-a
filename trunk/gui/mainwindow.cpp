@@ -32,10 +32,13 @@ MainWindow::MainWindow(QWidget *parent) :
     m_ui->setupUi(this);
     m_ui->toolBox->setCurrentIndex(0); //Enabling first tab
 
+    statusBar()->addWidget(&status);
+
     client = OdaConnection::getInstance();
     connect(client, SIGNAL(authenticated()), this, SLOT(onAuthenticated()));
     connect(client, SIGNAL(userContactList(OdaData)), this, SLOT(onContactList(OdaData)));
     connect(client, SIGNAL(userMessage(OdaData)), this, SLOT(onChatMessage(OdaData)));
+    connect(client, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 }
 
 MainWindow::~MainWindow()
@@ -73,7 +76,16 @@ void MainWindow::on_actionSettings_activated()
 */
 void MainWindow::onAuthenticated()
 {
+    status.setText("Connected");
     client->requestContactList();
+}
+
+/*!
+  Takes an action when client is disconnected
+*/
+void MainWindow::onDisconnected()
+{
+    status.setText("Disconnected");
 }
 
 /*!

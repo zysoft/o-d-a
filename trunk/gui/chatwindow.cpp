@@ -72,6 +72,7 @@ bool ChatWindow::addUser(OdaContactItem* user)
 {
     if (tabs.find(user->uid()) != tabs.end())
     {
+        m_ui->tabs->setCurrentIndex(m_ui->tabs->indexOf(tabs[user->uid()]));
         return false;
     }
 
@@ -132,4 +133,17 @@ void ChatWindow::on_send_clicked()
     uids << tabs.key(m_ui->tabs->currentWidget());
     client->sendChatMessage(uids, m_ui->myMessage->toPlainText());
     m_ui->myMessage->clear();
+}
+
+/*!
+  Closes tab
+  Removes widget object and requested tab
+*/
+void ChatWindow::on_tabs_tabCloseRequested(int index)
+{
+    m_ui->tabs->setCurrentIndex(index);
+    int uid = tabs.key(m_ui->tabs->currentWidget());
+    m_ui->tabs->removeTab(index);
+    delete tabs[uid];
+    tabs.remove(uid);
 }
