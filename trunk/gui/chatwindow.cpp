@@ -146,4 +146,8 @@ void ChatWindow::on_tabs_tabCloseRequested(int index)
     m_ui->tabs->removeTab(index);
     delete tabs[uid];
     tabs.remove(uid);
+    if (!tabs.count())
+    {
+        close();
+    }
 }
