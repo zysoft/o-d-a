@@ -50,7 +50,6 @@ private:
 private slots:
     void on_setup_clicked();
     void on_doLogin_clicked();
-    void onClientError(QString);
     void onAuthSuccess();
 };
 

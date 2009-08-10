@@ -78,6 +78,7 @@ signals:
     void authenticated();                   ///< Successful authentication
     void commandDone();                     ///< Operation processing finished
     void commandUnknown();                  ///< Operation cannot be processed because it is unknown
+    void disconnected();                    ///< Client disconnected signal
 
     //Operation related signals
     void op_getUserInfo();                  ///< Request to perform "Get user info" operation

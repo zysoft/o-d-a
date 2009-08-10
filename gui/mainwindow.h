@@ -21,6 +21,7 @@
 
 #include <QtGui/QMainWindow>
 #include <QListWidgetItem>
+#include <QLabel>
 #include "settingswindow.h"
 #include "chatwindow.h"
 #include "protocol/odaconnection.h"
@@ -50,11 +51,13 @@ protected:
 private:
     Ui::MainWindow *m_ui;
     ChatWindow     chat;
-    SettingsWindow settings; ///< Settings window instance
+    SettingsWindow settings;  ///< Settings window instance
     OdaConnection* client;    ///< Client connection
+    QLabel         status;    ///< Text label for status bar
 
 private slots:
     void onAuthenticated();
+    void onDisconnected();
     void onChatMessage(OdaData);
     void on_contactList_itemDoubleClicked(QListWidgetItem* item);
     void onContactList(OdaData);
