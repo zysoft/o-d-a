@@ -106,7 +106,6 @@ void ChatWindow::onError(QString err)
 */
 void ChatWindow::onMessage(OdaData msg)
 {
-
     int uid = msg.getInt("uid");
     if (users.find(uid) == users.end())
     {
@@ -144,8 +143,8 @@ void ChatWindow::on_tabs_tabCloseRequested(int index)
     m_ui->tabs->setCurrentIndex(index);
     int uid = tabs.key(m_ui->tabs->currentWidget());
     m_ui->tabs->removeTab(index);
-    delete tabs[uid];
     tabs.remove(uid);
+    users.remove(uid);
     if (!tabs.count())
     {
         close();

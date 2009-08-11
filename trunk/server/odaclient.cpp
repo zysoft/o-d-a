@@ -211,7 +211,7 @@ void OdaClient::onRoute(qint16 operation, unsigned int targetUserId, OdaData dat
         OdaData message;
         message.set("uid", dataPack.get("from"));
         message.set("message", dataPack.getString("message"));
-        sendPackage(OP_SEND_MESSAGE, message);
+        sendPackage(NF_NEW_MESSAGE, message);
         break;
     }
 
