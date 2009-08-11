@@ -313,7 +313,7 @@ void OdaConnection::onData()
     case OP_GET_CONTACTS:
         emit op_getContactList();
         break;
-    case OP_SEND_MESSAGE:
+    case NF_NEW_MESSAGE:
         emit op_getMessage();
         break;
 
