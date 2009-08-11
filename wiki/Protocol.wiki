@@ -30,11 +30,11 @@ Server reply gets built in the same way - preamble, size, and the response packa
 
 Authentication is performed as first operation after the connection establishment. This means user authenticates each time client connects to the server. 
 
-User authenticates using login and password. User credentials is a subject of administrator responsibility. Open registration in unavailable.
+User authenticates using login and password. User credentials is a subject of administrator responsibility. Open registration is unavailable.
 
 ||                                          *Client*              ||                     *Server*          ||
 || *Operation*: Auth start<br/>*Package*: empty               || *Operation*: Auth start<br/>*Package*: authToken       ||
-|| *Operation*: Authenticate<br/>*Package*: login, replyToken || *Operation*: Authenticate / FFFF (error)<br/>*Package*: user minimum info / error code ||
+|| *Operation*: Authenticate<br/>*Package*: login, token-hashed password || *Operation*: Authenticate / FFFF (error)<br/>*Package*: user minimum info / error code ||
 
 
 User minimum info contains:
@@ -183,3 +183,58 @@ When new message arrives, the next notification appears:
 || *Operation*: New message notification<br/>*Package*: message info ||
 
 Message info contains sender UID and the text.
+
+= Appendix A - Data exchange packages format ==
+
+=== Auth start ===
+
+_Client request_ - empty.
+
+_Server response_:
+
+|| *token* - authentication token ||
+
+
+
+=== Authenticate ===
+
+
+_Clinet request_:
+
+|| *login* - user login (plain text) <br/> *password* - token-hashed password ||
+
+_Server response_:
+
+|| *uid* - user unique identifier <br/> *cid* - company unique identifier <br/> *fullName* - user full name <br/> *companyName* - company name ||
+
+_*Note*: Passwords are stored in database as SHA1 hashes. *Password* field is calculated as SHA1(token+passwordHash). So, complete formula is SHA1(token+SHA1(password))_
+
+
+=== Get contacts ===
+
+_Client request_:
+
+|| *contactsType* - type of the contacts <br/> *pid* - project Id to get team contacts for ||
+
+_Server response_:
+
+|| *count* - contacts count<br/> *contact0* - contact 0 info<br/>*...*<br/>*contactN* - contact N info ||
+
+Contact info contains:
+
+|| *uid* - user unique identifier<br/>*fullName* - user full name ||
+
+
+=== Send message ===
+
+_Client request_:
+
+|| *message* - message text<br/>*count* - recipients count<br/>*uid0* - recipient 0 unique identifier<br/>*...*<br/>*uidN* - recipient N unique identifier ||
+
+
+
+=== New message notificaion ===
+
+_Server notification_:
+
+|| *uid* - sender unuque identifier<br/>*message* - mesage text ||
