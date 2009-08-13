@@ -23,6 +23,8 @@ Size marker is sent even for empty packages (with zero value).
 
 Server reply gets built in the same way - preamble, size, and the response package. In case of error, preamble is equal to FFFF.
 
+Client requests the server by sending request package and doesn't wait for the response directly. When the response comes, client serves it via the package router (see [ProcessingRequests Data requests processing]).
+
 
 == Client requests ==
 
@@ -93,7 +95,7 @@ It is possible to send contact a message. It also possible to send message to th
 The next protocol request will do it:
 
 ||                                          *Client*            ||                     *Server*         ||
-|| *Operation*: Send message<br/>*Package*: message info    || *Operation*: Send message / FFFF (error)<br/>*Package*: empty / error code||
+|| *Operation*: Send message<br/>*Package*: message info    || *Operation*: none / FFFF (error)<br/>*Package*: none / error code||
 
 Message info contains message text and target user identifiers.
 
@@ -103,7 +105,7 @@ Client can report to a task and/or change task parameters.
 The next request shows how to do that:
 
 ||                                          *Client*            ||                     *Server*         ||
-|| *Operation*: Task report<br/>*Package*: report info    || *Operation*: Task report / FFFF (error)<br/>*Package*: empty / error code||
+|| *Operation*: Task report<br/>*Package*: report info    || *Operation*: none / FFFF (error)<br/>*Package*: none / error code||
 
 Report info contains:
  * Task unique id (TID)
@@ -142,7 +144,7 @@ Client is able to create a task.
 The next request allows to do it:
 
 ||                                          *Client*            ||                     *Server*         ||
-|| *Operation*: Create task<br/>*Package*: task data    || *Operation*: Create task / FFFF (error)<br/>*Package*: empty / error code||
+|| *Operation*: Create task<br/>*Package*: task data    || *Operation*: none / FFFF (error)<br/>*Package*: none / error code||
 
 Task data contains:
  * Tracker unique id (TID)
@@ -154,8 +156,6 @@ Task data contains:
  * Assignee (UID)
 
 == Server notifications ==
-
-<font color="red"> *Note:* Server never waits for client to confirm any of the notifications.</font>
 
 === Contact status change ===
 
