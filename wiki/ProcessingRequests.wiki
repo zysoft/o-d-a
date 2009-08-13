@@ -45,7 +45,11 @@ Spawning threads is the potentially allowed operation, but we should avoid using
 *Request package* means the package itself without preamble. 
 *Response full package* means sending preamble and then the package.
 
+Server provides special way for client objects to communicate to each other. Server dispatches "route" event from clients and forwards the data to all currently active clients by sending "signalRoute" signal. This process is shown on the following diagram:
 
+[http://o-d-a.googlecode.com/svn/wiki_images/server_sigroute.png]
+
+So, the server application has two level event loops - one inside each client object and one for client objects data exchange. Both levels are independent.
 
 == Client model ==
 
