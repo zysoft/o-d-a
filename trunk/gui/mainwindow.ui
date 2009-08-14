@@ -15,7 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="2" column="0">
      <widget class="QToolBox" name="toolBox">
       <property name="currentIndex">
        <number>1</number>
@@ -25,8 +25,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>310</width>
-         <height>485</height>
+         <width>94</width>
+         <height>24</height>
         </rect>
        </property>
        <attribute name="label">
@@ -39,7 +39,7 @@
          <x>0</x>
          <y>0</y>
          <width>310</width>
-         <height>485</height>
+         <height>442</height>
         </rect>
        </property>
        <attribute name="label">
@@ -53,6 +53,34 @@
       </widget>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="userName">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="companyName">
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <italic>true</italic>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -61,7 +89,7 @@
      <x>0</x>
      <y>0</y>
      <width>328</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSystem">
