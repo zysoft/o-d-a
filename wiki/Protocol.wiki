@@ -222,7 +222,7 @@ _Server response_:
 
 Contact info contains:
 
-|| *uid* - user unique identifier<br/>*fullName* - user full name ||
+|| *uid* - user unique identifier<br/>*fullName* - user full name<br/>*status* - contact status ||
 
 
 === Send message ===
@@ -238,3 +238,10 @@ _Client request_:
 _Server notification_:
 
 || *uid* - sender unuque identifier<br/>*message* - mesage text ||
+
+
+=== New status notification ===
+
+_Server notification_:
+
+|| *uid* - user unique identifier<br/>*status* - current status ||
