@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     client = OdaConnection::getInstance();
     connect(client, SIGNAL(authenticated()), this, SLOT(onAuthenticated()));
+    connect(client, SIGNAL(userMiminumInfo(OdaData)), this, SLOT(onMinumumInfo(OdaData)));
     connect(client, SIGNAL(userContactList(OdaData)), this, SLOT(onContactList(OdaData)));
     connect(client, SIGNAL(userMessage(OdaData)), this, SLOT(onChatMessage(OdaData)));
     connect(client, SIGNAL(userStatus(OdaData)), this, SLOT(onStatusUpdate(OdaData)));
@@ -79,6 +80,15 @@ void MainWindow::onAuthenticated()
 {
     status.setText("Connected");
     client->requestContactList();
+}
+
+/*!
+  Receives UserMinimumInfo package
+*/
+void MainWindow::onMinumumInfo(OdaData info)
+{
+    m_ui->userName->setText(info.getString("fullName"));
+    m_ui->companyName->setText(info.getString("companyName"));
 }
 
 /*!
