@@ -19,6 +19,7 @@
 #include <QDateTime>
 #include <QtCore/QCoreApplication>
 #include "odaserver.h"
+#include "../lib/odaprotocol/odadefinitions.h"
 
 /*!
   Starts the server
@@ -93,3 +94,39 @@ void OdaServer::onSignalRoute(qint16 operation, unsigned int uid, OdaData dataPa
 {
     emit signalRoute(operation, uid, dataPack);
 }
+
+
+/*!
+  Updates online client status
+
+  \param uid    User unique id
+  \param status Contact status
+*/
+void OdaServer::setOnliner(unsigned int uid, int status)
+{
+    if (status == ST_ONLINE)
+    {
+        if (!onliners.contains(uid))
+        {
+            onliners.append(uid);
+        }
+        return;
+    }
+
+    if (onliners.contains(uid))
+    {
+        onliners.remove(onliners.indexOf(uid));
+    }
+}
+
+/*!
+  Returns list of UIDs currently online
+*/
+QVector<int> OdaServer::getOnliners()
+{
+    return onliners;
+}
+
+
+//Statics
+QVector<int> OdaServer::onliners;

@@ -35,11 +35,14 @@ private:
     QTcpServer  socket;                 ///< Listening socket
     QSqlDatabase db;                    ///< Service database connection
     QHash<QString, OdaClient*> clients; ///< List of active clients
+    static QVector<int> onliners;       ///< List of uids currently online
 
 public:
     inline OdaServer() {}
     void start(int port, QString dbHost, QString dbUser, QString dbPass, QString dbName);
     void stop();
+    static void setOnliner(unsigned int uid, int status);
+    static QVector<int> getOnliners();
 
 private slots:
     void clientConnected();

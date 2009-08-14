@@ -66,4 +66,15 @@ enum OdaContactTypes
     TEAM_CONTACTS
 };
 
+/*!
+  User statuses
+*/
+enum OdaUserStatuses
+{
+    ST_ONLINE,
+    ST_OFFLINE
+};
+
+
+
 #endif // ODADEFINITIONS_H

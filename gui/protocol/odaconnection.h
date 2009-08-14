@@ -62,6 +62,7 @@ public:
 private slots:
     //Main slots
     void onSocketError(QAbstractSocket::SocketError);
+    void socketCheck();
     void onInit();
     void onAuthStep1();
     void onAuthStep2();
@@ -75,6 +76,7 @@ private slots:
 signals:
     //Main signals
     void error(QString);                    ///< Error signal with human readable explanation
+    void socketReady();                     ///< Indicates that socket has data in
     void authenticated();                   ///< Successful authentication
     void commandDone();                     ///< Operation processing finished
     void commandUnknown();                  ///< Operation cannot be processed because it is unknown
@@ -85,9 +87,10 @@ signals:
     void op_getContactList();               ///< Request to perform "Get contact list" operation
     void op_getMessage();                   ///< Request to process "Send message" operation
 
-    void userMiminumInfo();                 ///< Transmits user info package
+    void userMiminumInfo(OdaData);          ///< Transmits user minimum info package
     void userContactList(OdaData);          ///< Transmits user contacts list
     void userMessage(OdaData);              ///< Transmits user message
+    void userStatus(OdaData);               ///< Transmits user status
 
 };
 

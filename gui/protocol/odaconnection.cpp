@@ -52,9 +52,11 @@ OdaConnection::OdaConnection()
     authStep2->addTransition(this, SIGNAL(authenticated()), dataWait);
     authStep2->addTransition(this, SIGNAL(error(QString)), preInit);
     dataWait->addTransition(&socket, SIGNAL(readyRead()), dataRoute);
+    dataWait->addTransition(this, SIGNAL(socketReady()), dataRoute);
     dataRoute->addTransition(this, SIGNAL(op_getUserInfo()), getUserInfo);
     dataRoute->addTransition(this, SIGNAL(op_getContactList()), getContactList);
     dataRoute->addTransition(this, SIGNAL(op_getMessage()), getMessage);
+    dataRoute->addTransition(this, SIGNAL(commandDone()), dataWait);
     getUserInfo->addTransition(this, SIGNAL(commandDone()), dataWait);
     getContactList->addTransition(this, SIGNAL(commandDone()), dataWait);
     getMessage->addTransition(this, SIGNAL(commandDone()), dataWait);
@@ -63,6 +65,7 @@ OdaConnection::OdaConnection()
     init->invokeMethodOnEntry(this, "onInit");
     authStep1->invokeMethodOnEntry(this, "onAuthStep1");
     authStep2->invokeMethodOnEntry(this, "onAuthStep2");
+    dataWait->invokeMethodOnEntry(this, "socketCheck");
     dataRoute->invokeMethodOnEntry(this, "onData");
     getUserInfo->invokeMethodOnEntry(this, "doGetUserInfo");
     getContactList->invokeMethodOnEntry(this, "doGetContactList");
@@ -244,6 +247,17 @@ void OdaConnection::onSocketError(QAbstractSocket::SocketError errorCode)
     }
 }
 
+/*!
+  Checks if the socket still has any data
+  This is needed because QTcpSocket::readyRead signal is emited once on data arrival
+*/
+void OdaConnection::socketCheck()
+{
+    if (socket.bytesAvailable())
+    {
+        emit socketReady();
+    }
+}
 
 /*!
   Slot which takes an action on "Init" state
@@ -293,10 +307,10 @@ void OdaConnection::onAuthStep2()
         return;
     }
 
-    OdaData info = getPackage();
-
-    emit userMiminumInfo();
     emit authenticated();
+
+    OdaData info = getPackage();
+    emit userMiminumInfo(info);
 }
 
 /*!
@@ -304,7 +318,6 @@ void OdaConnection::onAuthStep2()
 */
 void OdaConnection::onData()
 {
-
     switch (getOperation())
     {
     case OP_GET_USER_INFO:
@@ -315,6 +328,10 @@ void OdaConnection::onData()
         break;
     case NF_NEW_MESSAGE:
         emit op_getMessage();
+        break;
+    case NF_STATUS:
+        emit userStatus(getPackage());
+        emit commandDone();
         break;
 
     default:

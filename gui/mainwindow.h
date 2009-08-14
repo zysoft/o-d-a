@@ -59,6 +59,7 @@ private slots:
     void onAuthenticated();
     void onDisconnected();
     void onChatMessage(OdaData);
+    void onStatusUpdate(OdaData);
     void on_contactList_itemDoubleClicked(QListWidgetItem* item);
     void onContactList(OdaData);
     void on_actionSettings_activated();
