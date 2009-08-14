@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ODATCLIENT_H
+#ifndef ODACLIENT_H
 #define ODACLIENT_H
 
 #include <QObject>
@@ -51,8 +51,10 @@ private:
 public:
     OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket*);
     QString clientId();
+    unsigned int userId();
 
 private slots:
+    void socketCheck();                          ///< Slot that checks if socket has any data
     void onDisconnect();                         ///< Slot that takes an action on client disconnect
     void onRoute(qint16, unsigned int, OdaData); ///< Slot that takse an action on server request routing
 
@@ -66,6 +68,7 @@ private slots:
 
 signals:
     void route(qint16, unsigned int, OdaData);   ///< Routing signal
+    void socketReady();                          ///< Indicates that socket still has some data
     void authenticated();                        ///< Signal that indicates authentication success
     void commandUnknown();                       ///< Signal that indicates unknow command
     void commandDone();                          ///< Signal that indicates command processing end

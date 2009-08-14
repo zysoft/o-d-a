@@ -24,6 +24,7 @@
 #include <QSqlField>
 #include "../lib/odaprotocol/odadefinitions.h"
 #include "odaclient.h"
+#include "odaserver.h"
 
 
 
@@ -58,6 +59,7 @@ OdaClient::OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket* sock)
     preAuth->addTransition(socket, SIGNAL(readyRead()), authentication);
     authentication->addTransition(this, SIGNAL(authenticated()), commandWait);
     commandWait->addTransition(socket, SIGNAL(readyRead()), commandRoute);
+    commandWait->addTransition(this, SIGNAL(socketReady()), commandRoute);
     commandRoute->addTransition(this, SIGNAL(commandUnknown()), commandWait);
     commandRoute->addTransition(this, SIGNAL(getUserInfo()), doingUserInfo);
     commandRoute->addTransition(this, SIGNAL(getContactList()), doingContactList);
@@ -69,6 +71,7 @@ OdaClient::OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket* sock)
     //Assingning event handlers
     preAuth->invokeMethodOnEntry(this, "onPreAuth");
     authentication->invokeMethodOnEntry(this, "onAuthenticate");
+    commandWait->invokeMethodOnEntry(this, "socketCheck");
     commandRoute->invokeMethodOnEntry(this, "onCommand");
     doingUserInfo->invokeMethodOnEntry(this, "onGetUserInfo");
     doingContactList->invokeMethodOnEntry(this, "onGetContactList");
@@ -98,6 +101,16 @@ OdaClient::OdaClient(QString clientId, QSqlDatabase* database, QTcpSocket* sock)
 */
 QString OdaClient::clientId() {
     return uCid;
+}
+
+
+/*!
+  Returns user unique identifier
+
+  \return User unique identifier
+*/
+unsigned int OdaClient::userId() {
+    return uid;
 }
 
 
@@ -184,7 +197,31 @@ void OdaClient::sendError(int errorCode)
   Emits signal for server object to catch
 */
 void OdaClient::onDisconnect() {
+    if (uid)
+    {
+        //Updating server onliners list
+        OdaServer::setOnliner(uid, ST_OFFLINE);
+
+        //Sending offline notification
+        OdaData offline;
+        offline.set("uid", uid);
+        offline.set("status", ST_OFFLINE);
+        emit route(NF_STATUS, 0xFFFF, offline);
+    }
+
     emit clientDisconnected();
+}
+
+/*!
+  Checks if the socket still has any data
+  This is needed because QTcpSocket::readyRead signal is emited once on data arrival
+*/
+void OdaClient::socketCheck()
+{
+    if (socket->bytesAvailable())
+    {
+        emit socketReady();
+    }
 }
 
 /*!
@@ -192,13 +229,13 @@ void OdaClient::onDisconnect() {
   Takes an action when server performs signal routing between currently active clients for data exchange
 
   \param operation      Operation getting routed
-  \param targetUserId   UID rout is addressed to
+  \param targetUserId   UID rout is addressed to (FFFF means to ALL)
   \param dataPack       Data package enclosed to operation
 */
 void OdaClient::onRoute(qint16 operation, unsigned int targetUserId, OdaData dataPack)
 {
     //Skip if this is not for iur user
-    if (targetUserId != uid)
+    if (targetUserId != uid && targetUserId != 0xFFFF)
     {
         return;
     }
@@ -208,10 +245,17 @@ void OdaClient::onRoute(qint16 operation, unsigned int targetUserId, OdaData dat
     {
     //When we have SEND MESSAGE, we just forward that message to client
     case OP_SEND_MESSAGE:
-        OdaData message;
-        message.set("uid", dataPack.get("from"));
-        message.set("message", dataPack.getString("message"));
-        sendPackage(NF_NEW_MESSAGE, message);
+        {
+            OdaData message;
+            message.set("uid", dataPack.get("from"));
+            message.set("message", dataPack.getString("message"));
+            sendPackage(NF_NEW_MESSAGE, message);
+            break;
+        }
+
+    //Sending status notifications
+    case NF_STATUS:
+        sendPackage(NF_STATUS, dataPack);
         break;
     }
 
@@ -309,6 +353,15 @@ void OdaClient::onAuthenticate()
 
     //Telling that authentication is successful
     emit authenticated();
+
+    //Updating server onliners list
+    OdaServer::setOnliner(uid, ST_ONLINE);
+
+    //Sending online notification
+    OdaData online;
+    online.set("uid", uid);
+    online.set("status", ST_ONLINE);
+    emit route(NF_STATUS, 0xFFFF, online);
 }
 
 /*!
@@ -377,12 +430,14 @@ void OdaClient::onGetContactList()
     contacts.set("count", q.size());
     qint16 i = 0;
 
+    QVector<int> online = OdaServer::getOnliners();
     while(q.next())
     {
         QSqlRecord rec = q.record();
         OdaData contact;
         contact.set("uid", rec.field("uid").value().toInt());
         contact.set("fullName", rec.field("fullName").value().toString());
+        contact.set("status", (online.contains(rec.field("uid").value().toInt())) ? ST_ONLINE : ST_OFFLINE);
         contacts.setObject(QString("contact").append(QString().setNum(i++)), contact);
     }
 

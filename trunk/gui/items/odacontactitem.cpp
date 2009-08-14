@@ -20,6 +20,7 @@
 
 OdaContactItem::OdaContactItem()
 {
+    updateStatus();
 }
 
 /*!
@@ -36,4 +37,14 @@ void OdaContactItem::setUid(int userId)
 int OdaContactItem::uid()
 {
     return UID;
+}
+
+/*!
+  Updates contact item highlight according to its current status
+
+  \param status Contact status
+*/
+void OdaContactItem::updateStatus(int status)
+{
+    setBackgroundColor((status == ST_ONLINE) ? QColor(200, 255, 200) : QColor(240, 240, 240));
 }

@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(client, SIGNAL(authenticated()), this, SLOT(onAuthenticated()));
     connect(client, SIGNAL(userContactList(OdaData)), this, SLOT(onContactList(OdaData)));
     connect(client, SIGNAL(userMessage(OdaData)), this, SLOT(onChatMessage(OdaData)));
+    connect(client, SIGNAL(userStatus(OdaData)), this, SLOT(onStatusUpdate(OdaData)));
     connect(client, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
 }
 
@@ -93,9 +94,10 @@ void MainWindow::onDisconnected()
 */
 void MainWindow::onChatMessage(OdaData msg)
 {
+    int muid = msg.getInt("uid");
+
     for (int i=0; i<m_ui->contactList->count(); i++)
     {
-        int muid = msg.getInt("uid");
         OdaContactItem* item = static_cast<OdaContactItem*>(m_ui->contactList->item(i));
         if (item->uid() == muid)
         {
@@ -106,6 +108,23 @@ void MainWindow::onChatMessage(OdaData msg)
             chat.show();
             return;
          }
+    }
+}
+
+/*!
+  Handles users status update
+*/
+void MainWindow::onStatusUpdate(OdaData pack)
+{
+    int muid = pack.getInt("uid");
+
+    for (int i=0; i<m_ui->contactList->count(); i++)
+    {
+        OdaContactItem* item = static_cast<OdaContactItem*>(m_ui->contactList->item(i));
+        if (item->uid() == muid)
+        {
+            item->updateStatus(pack.getInt("status"));
+        }
     }
 }
 
@@ -123,6 +142,7 @@ void MainWindow::onContactList(OdaData contacts)
         OdaContactItem* item = new OdaContactItem();
         item->setUid(contact.getInt("uid"));
         item->setText(contact.getString("fullName"));
+        item->updateStatus(contact.getInt("status"));
         m_ui->contactList->addItem(item);
     }
 }

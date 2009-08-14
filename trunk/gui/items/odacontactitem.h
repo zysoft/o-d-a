@@ -20,6 +20,7 @@
 #define ODACONTACTITEM_H
 
 #include <QListWidgetItem>
+#include "../../lib/odaprotocol/odadefinitions.h"
 
 /*!
   Contact representation item
@@ -33,6 +34,7 @@ public:
     OdaContactItem();
     void setUid(int userId);
     int uid();
+    void updateStatus(int status = ST_OFFLINE);
 };
 
 #endif // ODACONTACTITEM_H
