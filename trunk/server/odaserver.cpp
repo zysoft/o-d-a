@@ -66,8 +66,9 @@ void OdaServer::clientConnected()
     QTcpSocket *clientConnection = socket.nextPendingConnection();
     QString clientId;
     clientId = clientConnection->peerAddress().toString() + QDateTime(QDateTime::currentDateTime()).toString("yyyyMMddhhmmsszzz");
-    OdaClient* client = new OdaClient(clientId, &db , clientConnection);
+    OdaConnection* client = new OdaConnection(clientId, clientConnection, true,  &db);
     connect(client, SIGNAL(clientDisconnected()), this, SLOT(clientDisconnected()));
+    connect(client, SIGNAL(authenticated(uint,uint)), this, SLOT(clientAuthenticated(uint,uint)));
     connect(client, SIGNAL(route(qint16, unsigned int, OdaData)), this, SLOT(onSignalRoute(qint16, unsigned int, OdaData)));
     client->connect(this, SIGNAL(signalRoute(qint16, unsigned int, OdaData)), client, SLOT(onRoute(qint16, unsigned int, OdaData)));
     clients[client->clientId()] = client;
@@ -76,11 +77,30 @@ void OdaServer::clientConnected()
 /*!
   Slot serving disconnected clients
   Removes disconnected client from hash
+  It also sends status notification
 */
 void OdaServer::clientDisconnected()
 {
-    OdaClient* client = static_cast<OdaClient*>(sender());
+    OdaConnection* client = static_cast<OdaConnection*>(sender());
+    OdaServer::setOnliner(client->userId(), ST_OFFLINE);
+    OdaData offline;
+    offline.set("uid", client->userId());
+    offline.set("status", ST_OFFLINE);
+    emit signalRoute(NF_STATUS, 0xFFFF, offline);
     clients.remove(client->clientId());
+}
+
+/*!
+  Slot updates user when user authenticates
+  It also sends status notification
+*/
+void OdaServer::clientAuthenticated(unsigned int uid, unsigned int)
+{
+    OdaServer::setOnliner(uid, ST_ONLINE);
+    OdaData online;
+    online.set("uid", uid);
+    online.set("status", ST_ONLINE);
+    emit signalRoute(NF_STATUS, 0xFFFF, online);
 }
 
 /*!
