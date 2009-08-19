@@ -23,7 +23,7 @@
 #include <QTcpServer>
 #include <QHash>
 #include <QSqlDatabase>
-#include "odaclient.h"
+#include "../lib/odaprotocol/odaconnection.h"
 
 /*!
   Server class
@@ -32,10 +32,10 @@ class OdaServer : public QObject
 {
     Q_OBJECT
 private:
-    QTcpServer  socket;                 ///< Listening socket
-    QSqlDatabase db;                    ///< Service database connection
-    QHash<QString, OdaClient*> clients; ///< List of active clients
-    static QVector<int> onliners;       ///< List of uids currently online
+    QTcpServer  socket;                      ///< Listening socket
+    QSqlDatabase db;                         ///< Service database connection
+    QHash<QString, OdaConnection*> clients;  ///< List of active clients
+    static QVector<int> onliners;            ///< List of uids currently online
 
 public:
     inline OdaServer() {}
@@ -46,6 +46,7 @@ public:
 
 private slots:
     void clientConnected();
+    void clientAuthenticated(unsigned int, unsigned int);
     void clientDisconnected();
     void onSignalRoute(qint16, unsigned int, OdaData);
 
