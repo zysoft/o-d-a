@@ -34,13 +34,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     statusBar()->addWidget(&status);
 
-    client = OdaConnection::getInstance();
-    connect(client, SIGNAL(authenticated()), this, SLOT(onAuthenticated()));
-    connect(client, SIGNAL(userMiminumInfo(OdaData)), this, SLOT(onMinumumInfo(OdaData)));
-    connect(client, SIGNAL(userContactList(OdaData)), this, SLOT(onContactList(OdaData)));
-    connect(client, SIGNAL(userMessage(OdaData)), this, SLOT(onChatMessage(OdaData)));
-    connect(client, SIGNAL(userStatus(OdaData)), this, SLOT(onStatusUpdate(OdaData)));
-    connect(client, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    client = OdaClientConnection::getInstance();
+
+    OdaAuthStep2* auth2 = static_cast<OdaAuthStep2*>(client->getOperation(OP_AUTHENTICATE));
+    OdaGetContactList* getCl = static_cast<OdaGetContactList*>(client->getOperation(OP_GET_CONTACTS));
+    OdaNewMessageNotification* newMessage = static_cast<OdaNewMessageNotification*>(client->getOperation(NF_NEW_MESSAGE));
+    OdaStatusNotification* statusNotification = static_cast<OdaStatusNotification*>(client->getOperation(NF_STATUS));
+
+    connect(client, SIGNAL(authenticated(uint, uint)), this, SLOT(onAuthenticated(uint, uint)));
+    connect(auth2, SIGNAL(userMinimumInfo(OdaData)), this, SLOT(onMinumumInfo(OdaData)));
+    connect(getCl, SIGNAL(userContactLits(OdaData)), this, SLOT(onContactList(OdaData)));
+    connect(newMessage, SIGNAL(userMessage(OdaData)), this, SLOT(onChatMessage(OdaData)));
+    connect(statusNotification, SIGNAL(userStatus(OdaData)), this, SLOT(onStatusUpdate(OdaData)));
+    connect(client, SIGNAL(clientDisconnected()), this, SLOT(onDisconnected()));
 }
 
 MainWindow::~MainWindow()
@@ -76,10 +82,13 @@ void MainWindow::on_actionSettings_activated()
 /*!
   Gets called when user is successfully authenticated and requests intial info
 */
-void MainWindow::onAuthenticated()
+void MainWindow::onAuthenticated(uint, uint)
 {
     status.setText("Connected");
-    client->requestContactList();
+    OdaData request;
+    request.set("pid", "-1");
+    request.set("contactsType", COMPANY_CONTACTS);
+    client->sendCommand(OP_GET_CONTACTS, request);
 }
 
 /*!

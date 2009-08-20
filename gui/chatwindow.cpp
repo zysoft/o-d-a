@@ -35,9 +35,12 @@ ChatWindow::ChatWindow(QWidget *parent) :
     m_ui->tabs->clear();
     delete m_ui->tab;
 
-    client = OdaConnection::getInstance();
-    connect(client, SIGNAL(userMessage(OdaData)), this, SLOT(onMessage(OdaData)));
-    connect(client, SIGNAL(error(QString)), this, SLOT(onError(QString)));
+    client = OdaClientConnection::getInstance();
+
+    OdaNewMessageNotification* newMessage = static_cast<OdaNewMessageNotification*>(client->getOperation(NF_NEW_MESSAGE));
+
+    connect(newMessage, SIGNAL(userMessage(OdaData)), this, SLOT(onMessage(OdaData)));
+    connect(client, SIGNAL(errorCode(int)), this, SLOT(onError(int)));
 }
 
 ChatWindow::~ChatWindow()
@@ -92,10 +95,28 @@ bool ChatWindow::addUser(OdaContactItem* user)
 /*!
   Slot displaying errors
 
-  \param err Error string
+  \param errCode Error code
 */
-void ChatWindow::onError(QString err)
+void ChatWindow::onError(int errCode)
 {
+    QString err;
+
+    switch (errCode)
+    {
+    case ERR_PREAMBLE_INVALID:
+        err = "Protocol violation";
+        break;
+
+    case ERR_USER_INVALID:
+        err = "Invalid login/password";
+        break;
+
+    default:
+        err = "Unknown error";
+        break;
+
+    }
+
     QMessageBox::critical(this, tr("Error"), err);
 }
 
@@ -130,7 +151,19 @@ void ChatWindow::on_send_clicked()
 
     QVector<int> uids;
     uids << tabs.key(m_ui->tabs->currentWidget());
-    client->sendChatMessage(uids, m_ui->myMessage->toPlainText());
+
+    OdaData message;
+    message.set("message", m_ui->myMessage->toPlainText());
+    message.set("count", uids.count());
+    int counter = 0;
+    QVectorIterator<int> i(uids);
+    while (i.hasNext())
+    {
+        message.set("uid"+QString().setNum(counter++), i.next());
+    }
+
+    client->sendCommand(OP_SEND_MESSAGE, message);
+
     m_ui->myMessage->clear();
 }
 

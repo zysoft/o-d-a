@@ -24,7 +24,7 @@
 #include <QLabel>
 #include "settingswindow.h"
 #include "chatwindow.h"
-#include "protocol/odaconnection.h"
+#include "protocol/odaclientconnection.h"
 #include "../lib/odaprotocol/odadata.h"
 
 /*!
@@ -52,11 +52,11 @@ private:
     Ui::MainWindow *m_ui;
     ChatWindow     chat;
     SettingsWindow settings;  ///< Settings window instance
-    OdaConnection* client;    ///< Client connection
+    OdaClientConnection* client;    ///< Client connection
     QLabel         status;    ///< Text label for status bar
 
 private slots:
-    void onAuthenticated();
+    void onAuthenticated(uint, uint);
     void onDisconnected();
     void onMinumumInfo(OdaData);
     void onChatMessage(OdaData);

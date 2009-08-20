@@ -23,8 +23,13 @@
 #include <QTcpSocket>
 #include <QSqlDatabase>
 #include <QtStateMachine>
-#include <QVector>
+#include <QHash>
 #include "odadata.h"
+
+/*!
+  Abstract operation prototype
+*/
+class OdaAbstractOperation;
 
 /*!
   Network protocol connection class
@@ -35,13 +40,15 @@ class OdaConnection : public QObject
     Q_OBJECT
 
 protected:
-    QString uCid;                   ///< Client unique id
-    unsigned int uid;               ///< Authenticated user unique id
-    unsigned int cid;               ///< User company unique id
-    QTcpSocket* socket;             ///< TCP Socket
-    QtStateMachine stateMachine;    ///< State machine
-    QSqlDatabase* db;               ///< Database object
-    QVector<QObject*> operations;   ///< List of the installed operations
+    QString uCid;                                   ///< Client unique id
+    unsigned int uid;                               ///< Authenticated user unique id
+    unsigned int cid;                               ///< User company unique id
+    QTcpSocket* socket;                             ///< TCP Socket
+    QtStateMachine stateMachine;                    ///< State machine
+    QSqlDatabase* db;                               ///< Database object
+    QHash<int, OdaAbstractOperation*> operations;   ///< List of the installed operations
+
+    void addOperation(int operationCode, OdaAbstractOperation*, QtState* routeState, QtState* waitState, bool isServerSide);
 
     qint16 getOperation();
     OdaData getPackage();
@@ -52,6 +59,7 @@ public:
     unsigned int userId();
     unsigned int companyId();
     QTcpSocket* getSocket();
+    OdaAbstractOperation* getOperation(int operationCode);
 
 private slots:
     void socketCheck();                          ///< Slot that checks if socket has any data
@@ -61,13 +69,15 @@ private slots:
 public slots:
     void sendPackage(qint16 operation, OdaData package);
     void sendPackage(qint16 operation, bool dataComesLater = false);
-    void sendError(int errorCode, bool isFatal = false);
+    void sendError(int errCode, bool isFatal = false);
     void onCommand();
 
     void proxyRoute(qint16, unsigned int, OdaData);
     void proxyAuth(unsigned int, unsigned int);
 
 signals:
+    void init();                                    ///< Initializes state machine
+    void errorCode(int);                            ///< Transports error code
     void operation(qint16, OdaData);                ///< Operation signal
     void route(qint16, unsigned int, OdaData);      ///< Routing signal
     void socketReady();                             ///< Indicates that socket still has some data

@@ -35,15 +35,15 @@ void OdaAuthStep2::setAuthToken(QString token)
     authToken = token;
 }
 
+
 /*!
   Installs operation
 
   \see OdaAbstractOperation::install
 */
-void OdaAuthStep2::install(OdaConnection* connection, QtState* preAuth, QtState* authenticate, QSqlDatabase* database, bool serverSide)
+void OdaAuthStep2::install(OdaConnection* connection, QtState* authenticate, QSqlDatabase* database, bool serverSide)
 {
     db = database;
-    preAuth->addTransition(connection->getSocket(), SIGNAL(readyRead()), authenticate);    
     authenticate->invokeMethodOnEntry(connection, "onCommand");
     connect(this, SIGNAL(commandExecute()), this, (serverSide) ? SLOT(doServerSide()) : SLOT(doClientSide()));
     connect(connection, SIGNAL(operation(qint16,OdaData)), this, SLOT(onOperation(qint16,OdaData)));
@@ -58,7 +58,13 @@ void OdaAuthStep2::install(OdaConnection* connection, QtState* preAuth, QtState*
 */
 void OdaAuthStep2::doClientSide()
 {
-    emit packageReady(OP_AUTHENTICATE);
+    if (sourcePackage.getInt("uid"))
+    {
+        uid = sourcePackage.getInt("uid");
+        cid = sourcePackage.getInt("cid");
+        emit authenticated(uid, cid);
+        emit userMinimumInfo(sourcePackage);
+    }
 }
 
 /*!

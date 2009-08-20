@@ -20,7 +20,7 @@
 #include <QSettings>
 #include "loginwindow.h"
 #include "ui_loginwindow.h"
-#include "protocol/odaconnection.h"
+
 
 /*!
   Constructs login window object
@@ -31,8 +31,9 @@ LoginWindow::LoginWindow(QWidget *parent)
     : QDialog(parent), ui(new Ui::LoginWindow)
 {
     ui->setupUi(this);
-    client = OdaConnection::getInstance();
-    connect(client, SIGNAL(authenticated()), this, SLOT(onAuthSuccess()));
+
+    client = OdaClientConnection::getInstance();
+    connect(client, SIGNAL(authenticated(uint,uint)), this, SLOT(onAuthSuccess(uint,uint)));
 
     QSettings config;
     ui->login->setText(config.value("user/login").toString());
@@ -60,14 +61,15 @@ void LoginWindow::on_doLogin_clicked()
     }
 
     QSettings config;
-    client->initiate(config.value("server/host").toString(), config.value("server/port").toInt(), ui->login->text(), ui->password->text());
+    OdaClientConnection::setup(config.value("server/host").toString(), config.value("server/port").toInt(), ui->login->text(), ui->password->text());
+    client->establishConnection();
 }
 
 
 /*!
   Takes an action when session is successfully intiated (user authenticated)
 */
-void LoginWindow::onAuthSuccess()
+void LoginWindow::onAuthSuccess(uint, uint)
 {
     accept();
 }

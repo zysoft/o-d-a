@@ -27,6 +27,7 @@ OdaStatusNotification::OdaStatusNotification()
 */
 void OdaStatusNotification::doClientSide()
 {
+    emit userStatus(sourcePackage);
     emit commandDone();
 }
 
