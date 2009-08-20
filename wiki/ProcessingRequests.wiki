@@ -33,9 +33,6 @@ Let's see what does each state mean:
 
 When the command execution is done, client is returned to *Command wait* state.
 
-Sending notifications is much simplier procedure because we assume that server never waits for client confirmation (see [Protocol#Server_notifications Server notifications] section).
-
-
 For better understanding how does it work with socket, the next diagram shows the main data flow:
 
 [http://o-d-a.googlecode.com/svn/wiki_images/server_sm_socket.png]
