@@ -30,7 +30,10 @@ OdaAuthStep1::OdaAuthStep1()
 */
 void OdaAuthStep1::install(OdaConnection* connection, QtState* init, QtState* preAuth, bool serverSide)
 {
-    init->addTransition(connection->getSocket(), SIGNAL(readyRead()), preAuth);
+    if (!serverSide)
+    {
+        init->invokeMethodOnEntry(this, "doClientSide");
+    }
     preAuth->invokeMethodOnEntry(connection, "onCommand");
     connect(this, SIGNAL(commandExecute()), this, (serverSide) ? SLOT(doServerSide()) : SLOT(doClientSide()));
     connect(connection, SIGNAL(operation(qint16,OdaData)), this, SLOT(onOperation(qint16,OdaData)));
@@ -51,11 +54,39 @@ QString OdaAuthStep1::getToken()
     return authToken;
 }
 
+
+/*!
+  Sets user credentials
+*/
+void OdaAuthStep1::setCredentials(QString uLogin, QString uPass)
+{
+    login = uLogin;
+    pass = uPass;
+}
+
 /*!
   Performs client side processing
 */
 void OdaAuthStep1::doClientSide()
 {
+    if (sourcePackage.getString("token").length())
+    {
+        authToken = sourcePackage.getString("token");
+
+        QCryptographicHash hash(QCryptographicHash::Sha1);
+        hash.addData(QString(pass).toAscii());
+        QString passHash = hash.result().toHex();
+        hash.reset();
+        hash.addData(QString(authToken+passHash).toAscii());
+        OdaData credentials;
+        credentials.set("login", login);
+        credentials.set("password", hash.result().toHex());
+        emit packageReady(OP_AUTHENTICATE, credentials);
+
+        sourcePackage = OdaData();
+
+        return;
+    }
     emit packageReady(OP_AUTH_START);
 }
 

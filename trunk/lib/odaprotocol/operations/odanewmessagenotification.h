@@ -38,6 +38,9 @@ protected:
 public slots:
     virtual void doClientSide();
     virtual void doServerSide();
+
+signals:
+    void userMessage(OdaData);  ///< Transports message
 };
 
 #endif // ODANEWMESSAGENOTIFICATION_H

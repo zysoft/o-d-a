@@ -30,7 +30,7 @@ class OdaAuthStep2 : public OdaAbstractOperation
 
 public:
     OdaAuthStep2();
-    virtual void install(OdaConnection*, QtState* preAuth, QtState* authenticate, QSqlDatabase* database, bool serverSide = false);
+    virtual void install(OdaConnection*, QtState* authenticate, QSqlDatabase* database, bool serverSide = false);
     void setAuthToken(QString);
 protected:
     QString authToken;
@@ -41,6 +41,7 @@ public slots:
 
 signals:
     void authenticated(unsigned int, unsigned int);     ///< Signal indicating that user is successfully authenticated
+    void userMinimumInfo(OdaData);                      ///< Tranports User Minimum Info package
 };
 
 #endif // ODAAUTHSTEP1_H

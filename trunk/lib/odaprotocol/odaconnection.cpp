@@ -52,6 +52,13 @@ OdaConnection::OdaConnection(QString clientId, QTcpSocket* sock, bool isServerSi
     commandWait->addTransition(this, SIGNAL(socketReady()), commandRoute);
     commandRoute->addTransition(this, SIGNAL(commandUnknown()), commandWait);
 
+    if (!isServerSide)
+    {
+        authentication->addTransition(this, SIGNAL(init()), preInit);
+        preAuth->addTransition(this, SIGNAL(init()), preInit);
+        init->addTransition(this, SIGNAL(init()), preInit);
+    }
+
     //Assingning event handlers
     commandWait->invokeMethodOnEntry(this, "socketCheck");
     commandRoute->invokeMethodOnEntry(this, "onCommand");
@@ -65,31 +72,23 @@ OdaConnection::OdaConnection(QString clientId, QTcpSocket* sock, bool isServerSi
     stateMachine.addState(commandRoute);
 
 
-    //Initializing operations that extend state machine
+    //Initializing operations that extend state machine    
+
+    //Initializing special operations
     OdaAuthStep1* authstep1 = new OdaAuthStep1();
     authstep1->install(this, init, preAuth, isServerSide);
-    operations.append(authstep1);
+    operations[OP_AUTH_START] = authstep1;
 
     OdaAuthStep2* authstep2 = new OdaAuthStep2();
-    authstep2->install(this, preAuth, authentication, db, isServerSide);
+    authstep2->install(this, authentication, db, isServerSide);
     authstep2->setAuthToken(authstep1->getToken());
-    operations.append(authstep2);
+    operations[OP_AUTHENTICATE] = authstep2;
 
-    OdaGetContactList* getContactList = new OdaGetContactList();
-    getContactList->install(this, &stateMachine, commandRoute, commandWait, db, isServerSide);
-    operations.append(getContactList);
-
-    OdaStatusNotification* statusNotification = new OdaStatusNotification();
-    statusNotification->install(this, &stateMachine, commandRoute, commandWait, db, isServerSide);
-    operations.append(statusNotification);
-
-    OdaSendMessage* sendMessage = new OdaSendMessage();
-    sendMessage->install(this, &stateMachine, commandRoute, commandWait, db, isServerSide);
-    operations.append(sendMessage);
-
-    OdaNewMessageNotification* newMessageNotification = new OdaNewMessageNotification();
-    newMessageNotification->install(this, &stateMachine, commandRoute, commandWait, db, isServerSide);
-    operations.append(newMessageNotification);
+    //Initializing regular operations
+    addOperation(OP_GET_CONTACTS, new OdaGetContactList(), commandRoute, commandWait, isServerSide);
+    addOperation(OP_SEND_MESSAGE, new OdaSendMessage(), commandRoute, commandWait, isServerSide);
+    addOperation(NF_STATUS, new OdaStatusNotification(), commandRoute, commandWait, isServerSide);
+    addOperation(NF_NEW_MESSAGE, new OdaNewMessageNotification(), commandRoute, commandWait, isServerSide);
 
     //Running the state machine
     stateMachine.setInitialState((isServerSide) ? init : preInit);
@@ -128,6 +127,31 @@ QTcpSocket* OdaConnection::getSocket()
 {
     return socket;
 }
+
+/*!
+  Adds an operation to connection object
+
+  \param operationCode  Code of the operation
+  \param operation      Operation object
+*/
+void OdaConnection::addOperation(int operationCode, OdaAbstractOperation* operation, QtState* routeState, QtState* waitState, bool isServerSide)
+{
+    operation->install(this, &stateMachine, routeState, waitState, db, isServerSide);
+    operations[operationCode] = operation;
+}
+
+/*!
+  Returns operation object
+*/
+OdaAbstractOperation* OdaConnection::getOperation(int operationCode)
+{
+    if (operations.find(operationCode) != operations.end())
+    {
+        return operations[operationCode];
+    }
+    return NULL;
+}
+
 
 /*!
   Checks if the socket still has any data
@@ -223,10 +247,10 @@ void OdaConnection::sendPackage(qint16 operation, bool dataComesLater)
   \param error      Error explanation string
   \param isFatal    Indicates if the error is fatal. Socket gets disconnected on fatal errors
 */
-void OdaConnection::sendError(int errorCode, bool isFatal)
+void OdaConnection::sendError(int errCode, bool isFatal)
 {
     OdaData err;
-    err.set("errorCode", errorCode);
+    err.set("errorCode", errCode);
     sendPackage(0xFFFF, err);
     if (isFatal)
     {
@@ -242,6 +266,15 @@ void OdaConnection::onCommand()
 {
     qint16 op = getOperation();
     OdaData package = getPackage();
+
+    //If we've got an error
+    if (op == (qint16)0xFFFF)
+    {
+        emit errorCode(package.getInt("errorCode"));
+        emit commandUnknown();
+        return;
+    }
+
     emit operation(op, package);
     emit commandUnknown();
 }

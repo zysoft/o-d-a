@@ -31,6 +31,7 @@ OdaGetContactList::OdaGetContactList()
 */
 void OdaGetContactList::doClientSide()
 {
+    emit userContactLits(sourcePackage);
     emit commandDone();
 }
 
@@ -55,6 +56,7 @@ void OdaGetContactList::doServerSide()
     qint16 i = 0;
 
     QVector<int> online = OdaServer::getOnliners();
+
     while(q.next())
     {
         QSqlRecord rec = q.record();

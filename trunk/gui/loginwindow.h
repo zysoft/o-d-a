@@ -21,7 +21,7 @@
 
 #include <QtGui/QDialog>
 #include "settingswindow.h"
-#include "protocol/odaconnection.h"
+#include "protocol/odaclientconnection.h"
 
 /*!
   Namespace for LoginWindow
@@ -44,13 +44,13 @@ public:
 
 private:
     Ui::LoginWindow *ui;
-    OdaConnection* client;
+    OdaClientConnection* client;
     SettingsWindow setup;
 
 private slots:
     void on_setup_clicked();
     void on_doLogin_clicked();
-    void onAuthSuccess();
+    void onAuthSuccess(uint, uint);
 };
 
 #endif // LOGINWINDOW_H

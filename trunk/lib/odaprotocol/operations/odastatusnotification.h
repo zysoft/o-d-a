@@ -38,6 +38,9 @@ protected:
 public slots:
     virtual void doClientSide();
     virtual void doServerSide();
+
+signals:
+    void userStatus(OdaData);   ///< Transports user status
 };
 
 #endif // ODASTATUSNOTIFICATION_H

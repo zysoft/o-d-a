@@ -20,7 +20,7 @@
 #include <QCache>
 #include "loginwindow.h"
 #include "mainwindow.h"
-#include "protocol/odaconnection.h"
+#include "protocol/odaclientconnection.h"
 
 /*!
   Main function

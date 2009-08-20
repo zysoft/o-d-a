@@ -27,6 +27,7 @@ OdaNewMessageNotification::OdaNewMessageNotification()
 */
 void OdaNewMessageNotification::doClientSide()
 {
+    emit userMessage(sourcePackage);
     emit commandDone();
 }
 

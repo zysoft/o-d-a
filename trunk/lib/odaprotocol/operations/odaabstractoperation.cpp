@@ -37,7 +37,7 @@ void OdaAbstractOperation::install(OdaConnection* connection, QtStateMachine* st
     db = database;
     QtState* doingOperation = new QtState();
     routeState->addTransition(this, SIGNAL(commandExecute()), doingOperation);
-    //A hack for operations routhed throug the server
+    //A hack for operations routhed through the server
     waitState->addTransition(this, SIGNAL(commandExecute()), doingOperation);
     doingOperation->addTransition(this, SIGNAL(commandDone()), waitState);
     doingOperation->invokeMethodOnEntry(this, (serverSide) ? "doServerSide" : "doClientSide");
@@ -59,7 +59,6 @@ void OdaAbstractOperation::install(OdaConnection* connection, QtStateMachine* st
 */
 void OdaAbstractOperation::onOperation(qint16 operation, OdaData package)
 {
-    
     if (operation != getOperationCode())
     {
         return;

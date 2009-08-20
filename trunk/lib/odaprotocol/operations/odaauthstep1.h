@@ -32,9 +32,14 @@ public:
     OdaAuthStep1();
     virtual void install(OdaConnection*, QtState* init, QtState* preAuth, bool serverSide = false);
     QString getToken();
+    void setCredentials(QString uLogin, QString uPass);
+
 protected:
+    QString login;                                       ///< User login for client side
+    QString pass;                                        ///< User password for client side
     QString authToken;
     virtual qint16 getOperationCode();                   ///< Returns operation code the object represents
+
 public slots:
     virtual void doClientSide();                         ///< Performs operation processing for client side
     virtual void doServerSide();                         ///< Performs operation processing for server side

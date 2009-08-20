@@ -21,7 +21,7 @@
 
 #include <QtGui/QMainWindow>
 #include <QHash>
-#include "protocol/odaconnection.h"
+#include "protocol/odaclientconnection.h"
 #include "items/odacontactitem.h"
 #include "../lib/odaprotocol/odadata.h"
 
@@ -50,12 +50,12 @@ private:
     Ui::ChatWindow *m_ui;
     QHash<int, OdaContactItem*> users;
     QHash<int, QWidget*> tabs;
-    OdaConnection* client;
+    OdaClientConnection* client;
 
 private slots:
     void on_tabs_tabCloseRequested(int index);
     void on_send_clicked();
-    void onError(QString);
+    void onError(int);
 
 public slots:
     void onMessage(OdaData);
