@@ -1,0 +1,6 @@
+#labels Deprecated
+=== Documents ===
+
+ * [FeaturesList Возможности продукта]
+ * [Protocol Протокол обмена данными]
+ * [ProcessingRequests Обработка запросов]
