@@ -1,5 +1,5 @@
 #labels Deprecated
-=== Documents ===
+=== Документы ===
 
  * [FeaturesList Возможности продукта]
  * [Protocol Протокол обмена данными]
