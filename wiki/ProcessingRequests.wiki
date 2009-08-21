@@ -63,7 +63,7 @@ Let's see what does each state mean:
  * *Data route* - Got preamble, deciding which operation it is
  * *Operation 1...N* - Parsing package
 
-*Request wait* is a state when client waits for server data packages. To perform server requests, client should be equiped with a set of slots providing event driven interface for making server requests - one slot for one operation. We assume server request as atomic operation and don't put it to state machine. State machine will be used to read the server response packages.
+*Request wait* is a state when client waits for server data packages. We assume server request as atomic operation and don't put it to state machine. State machine will be used to read the server response packages.
 
 Let's see the process on the state diagram with socket shown:
 
