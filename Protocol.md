@@ -1,0 +1,264 @@
+
+
+# Introduction #
+
+This document describes how Open Development Assistant communicates between its parts (client and server).
+
+_**Note**: Work on the document is in progress_
+
+# Protocol #
+
+## Concept ##
+
+### Idea ###
+
+The protocol implements persistent connection. This means that client is continuously connected to the server during the work session. In case of any connection errors, client should reconnect and continue working. There should be a time limit for each operation to disallow connection hang.
+
+### The protocol package ###
+
+Protocol works in binary mode and has "preamble", data size marker, and the data package. Preamble is an integer (2 bytes length) value specifying the operation type. Size marker is an integer and gets sent directly after the preamble. Package follows the size marker and its structure depends on the operation type.
+Size marker is sent even for empty packages (with zero value).
+
+Server reply gets built in the same way - preamble, size, and the response package. In case of error, preamble is equal to FFFF.
+
+Client requests the server by sending request package and doesn't wait for the response directly. When the response comes, client serves it via the package router (see [Data requests processing](ProcessingRequests.md)).
+
+
+## Client requests ##
+
+### Authentication ###
+
+Authentication is performed as first operation after the connection establishment. This means user authenticates each time client connects to the server.
+
+User authenticates using login and password. User credentials is a subject of administrator responsibility. Open registration is unavailable.
+
+|                                          **Client**              |                     **Server**          |
+|:-----------------------------------------------------------------|:----------------------------------------|
+| **Operation**: Auth start<br />**Package**: empty               | **Operation**: Auth start<br />**Package**: authToken       |
+| **Operation**: Authenticate<br />**Package**: login, token-hashed password | **Operation**: Authenticate / FFFF (error)<br />**Package**: user minimum info / error code |
+
+
+User minimum info contains:
+  * User UID (unique id)
+  * User full name
+  * User company name
+  * User company CID (unique id)
+
+
+### Getting user information ###
+
+User information is stored on server and can be retrieved via special protocol instructions.
+This information contains:
+  * Project list user participates in (gets collected through all the linked task trackers)
+  * Tasks list assigned to user
+
+The get request can be made as follows:
+
+|                                          **Client**            |                     **Server**         |
+|:---------------------------------------------------------------|:---------------------------------------|
+| **Operation**: Get user info<br />**Package**: empty           | **Operation**: Get User info / FFFF (error)<br />**Package**: user info / error code|
+
+Server replies with project and task lists.
+
+Each project in the list contains:
+  * Tracker unique id (TRID) (for further identification)
+  * Project unique id (PID) (for further identification)
+  * Name
+  * Currently assigned tasks list
+  * List of available activities (development, bugfixing, research, etc. depending on tracker settings)
+
+Each task contains:
+  * Task unique id (TID) (for further identification)
+  * Project unique id task belongs to (PID) (for further identification)
+  * Name
+  * Description (with history)
+  * Priority
+  * Status
+  * % done
+  * Author
+  * Date when task is created
+  * Estimated time
+  * Due date
+
+### Contact list ###
+
+User contact list depends on contact type. Contact type can be "COMPANY", "OFFICE" or "TEAM". "TEAM" contact list depends on the project.
+The next request is used to get contact list:
+
+|                                          **Client**            |                     **Server**         |
+|:---------------------------------------------------------------|:---------------------------------------|
+| **Operation**: Get contacts<br />**Package**: contacts type    | **Operation**: Get Contacts / FFFF (error)<br />**Package**: contacts list / error code|
+
+Contacts type package contains type and project id.Project id is required for "TEAM" type contacts.
+
+### Send contacts a message ###
+It is possible to send contact a message. It also possible to send message to the contacts group.
+The next protocol request will do it:
+
+|                                          **Client**            |                     **Server**         |
+|:---------------------------------------------------------------|:---------------------------------------|
+| **Operation**: Send message<br />**Package**: message info    | **Operation**: none / FFFF (error)<br />**Package**: none / error code|
+
+Message info contains message text and target user identifiers.
+
+### Report to a task ###
+
+Client can report to a task and/or change task parameters.
+The next request shows how to do that:
+
+|                                          **Client**            |                     **Server**         |
+|:---------------------------------------------------------------|:---------------------------------------|
+| **Operation**: Task report<br />**Package**: report info    | **Operation**: none / FFFF (error)<br />**Package**: none / error code|
+
+Report info contains:
+  * Task unique id (TID)
+  * Project unique id (PID)
+  * Comment
+  * Spent time
+  * % done
+  * Assignee change
+  * Status
+  * Custom report time
+  * Activity type (development, research, etc.)
+
+
+### Get task parameters ###
+
+Because user role is different for each project, task creation parameters can differ. This applies to existent tasks as well as to new ones.
+The next request shows how to get that parameters:
+
+|                                          **Client**            |                     **Server**         |
+|:---------------------------------------------------------------|:---------------------------------------|
+| **Operation**: Get task parameters<br />**Package**: task info    | **Operation**: Get task parameters / FFFF (error)<br />**Package**: task parameters / error code|
+
+Task parameters are:
+  * Tracker unique id (TID)
+  * Project unique id (PID)
+  * Task unique id (TID, optional)
+
+Task parameters can be:
+  * List of available types (bug, task, feature, etc. depending on tracker settings)
+  * List of available statuses (depending on tracker settings)
+  * List of available priorities (depending on tracker settings)
+  * List of available categories (frontend, backend, etc. depending on tracker settings)
+  * List of available assignee (depending on project participants)
+
+### Create a task ###
+Client is able to create a task.
+The next request allows to do it:
+
+|                                          **Client**            |                     **Server**         |
+|:---------------------------------------------------------------|:---------------------------------------|
+| **Operation**: Create task<br />**Package**: task data    | **Operation**: none / FFFF (error)<br />**Package**: none / error code|
+
+Task data contains:
+  * Tracker unique id (TID)
+  * Project unique id (PID)
+  * Type
+  * Status
+  * Priority
+  * Category (optional)
+  * Assignee (UID)
+
+## Server notifications ##
+
+### Contact status change ###
+
+When the contact status is changed, server notifies clients with the following request:
+
+|                         **Server**                                |
+|:------------------------------------------------------------------|
+| **Operation**: Status notification<br />**Package**: status info |
+
+Status info contains target user UID and new status code.
+
+### Task list update ###
+
+A notification tells client that assigned task list is updated.
+This is done as follows:
+
+|                         **Server**                                 |
+|:-------------------------------------------------------------------|
+| **Operation**: Tasks update notification<br />**Package**: empty |
+
+
+### New message ###
+
+When new message arrives, the next notification appears:
+
+|                         **Server**                          |
+|:------------------------------------------------------------|
+| **Operation**: New message notification<br />**Package**: message info |
+
+Message info contains sender UID and the text.
+
+# Appendix A - Data exchange packages format #
+
+### Auth start ###
+
+_Client request_ - empty.
+
+_Server response_:
+
+| **token** - authentication token |
+|:---------------------------------|
+
+
+
+### Authenticate ###
+
+
+_Clinet request_:
+
+| **login** - user login (plain text) <br /> **password** - token-hashed password |
+|:--------------------------------------------------------------------------------|
+
+_Server response_:
+
+| **uid** - user unique identifier <br /> **cid** - company unique identifier <br /> **fullName** - user full name <br /> **companyName** - company name |
+|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+_**Note**: Passwords are stored in database as SHA1 hashes. **Password** field is calculated as SHA1(token+passwordHash). So, complete formula is SHA1(token+SHA1(password))_
+
+
+### Get contacts ###
+
+_Client request_:
+
+| **contactsType** - type of the contacts <br /> **pid** - project Id to get team contacts for |
+|:---------------------------------------------------------------------------------------------|
+
+_Server response_:
+
+| **count** - contacts count<br /> **contact0** - contact 0 info<br />**...**<br />**contactN** - contact N info |
+|:---------------------------------------------------------------------------------------------------------------|
+
+Contact info contains:
+
+| **uid** - user unique identifier<br />**fullName** - user full name<br />**status** - contact status |
+|:-----------------------------------------------------------------------------------------------------|
+
+
+### Send message ###
+
+_Client request_:
+
+| **message** - message text<br />**count** - recipients count<br />**uid0** - recipient 0 unique identifier<br />**...**<br />**uidN** - recipient N unique identifier |
+|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+
+
+### New message notificaion ###
+
+_Server notification_:
+
+| **uid** - sender unuque identifier<br />**message** - mesage text |
+|:------------------------------------------------------------------|
+
+
+### New status notification ###
+
+_Server notification_:
+
+| **uid** - user unique identifier<br />**status** - current status |
+|:------------------------------------------------------------------|

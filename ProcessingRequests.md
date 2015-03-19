@@ -1,0 +1,70 @@
+# Processing requests #
+
+_**Note**: Work on the document is in progress_
+
+This document describes how client and server process the requests.
+We assume that the most effective way to build server (and client) is to use asynchronous model.
+So, there will be no custom threads. Everything is done via application event loop.
+
+To do that, we need to know each client state at every moment. We decided to use [Qt State Machine Framework](http://www.qtsoftware.com/products/appdev/add-on-products/catalog/4/Utilities/qt-state-machine-framework) which is the best for our task.
+
+<font color='red'> <b>Note</b>: Qt State Machine Framework is requered for application to work</font>
+
+## Server model ##
+
+Server has a special object for each client which contains its socket, state machine (with current state) and all the requered methods for interaction.
+
+The state machine configuration is linked with client socket events, but data processing differs depending on the state client is currently in.
+
+The next diagram shows the states and transitions for each client on the server:
+
+![http://o-d-a.googlecode.com/svn/wiki_images/server_sm.png](http://o-d-a.googlecode.com/svn/wiki_images/server_sm.png)
+
+Let's see what does each state mean:
+  * **Init** - Client state machine intialized (initial state)
+  * **Pre-auth** - Got token request, token sent, waiting for credentials
+  * **Authentication** - Got credentials, authenticating
+  * **Command wait** - The central state when server waits for a command from client
+  * **Command route** - Short term state when the command gets routed (operation selection)
+  * **Operation 1...N execution** - Doing requested operation
+
+When the command execution is done, client is returned to **Command wait** state.
+
+For better understanding how does it work with socket, the next diagram shows the main data flow:
+
+![http://o-d-a.googlecode.com/svn/wiki_images/server_sm_socket.png](http://o-d-a.googlecode.com/svn/wiki_images/server_sm_socket.png)
+
+Spawning threads is the potentially allowed operation, but we should avoid using it until we have no other option (for completely synchronous operations).
+
+**Request package** means the package itself without preamble.
+**Response full package** means sending preamble and then the package.
+
+Server provides special way for client objects to communicate to each other. Server dispatches "route" event from clients and forwards the data to all currently active clients by sending "signalRoute" signal. This process is shown on the following diagram:
+
+![http://o-d-a.googlecode.com/svn/wiki_images/server_sigroute.png](http://o-d-a.googlecode.com/svn/wiki_images/server_sigroute.png)
+
+So, the server application has two level event loops - one inside each client object and one for client objects data exchange. Both levels are independent.
+
+## Client model ##
+
+Client model follows the same idea, but has only one state machine describing client state at every moment. Client states and transitions are shown on the following diagram:
+
+![http://o-d-a.googlecode.com/svn/wiki_images/client_sm.png](http://o-d-a.googlecode.com/svn/wiki_images/client_sm.png)
+
+Let's see what does each state mean:
+  * **Pre-init** - Client just initialized and initiated the connection (initial state)
+  * **Init** - Connection established, sending token request
+  * **Auth step 1** - Token received, authentication data sent, waiting for server to confirm
+  * **Auth step 2** - Got server confirmation. Checking it out
+  * **Data wait** - Central state where client waits for server packages
+  * **Data route** - Got preamble, deciding which operation it is
+  * **Operation 1...N** - Parsing package
+
+**Request wait** is a state when client waits for server data packages. We assume server request as atomic operation and don't put it to state machine. State machine will be used to read the server response packages.
+
+Let's see the process on the state diagram with socket shown:
+
+![http://o-d-a.googlecode.com/svn/wiki_images/client_sm_socket.png](http://o-d-a.googlecode.com/svn/wiki_images/client_sm_socket.png)
+
+
+**Response package** means server response package without preamble.
