@@ -25,10 +25,16 @@ II. Making:
 
 III. Running
     1. Run server:
+```
 	cd server
 	./o-d-a-server port dbHost dbUser dbPass dbName 2>&1>/dev/null &
+```
     2. Run client:
+```
 	cd gui
 	./o-d-a
+```
     3. Login as user "admin" and password "admin"
     4. Enjoy!
+
+Check [Wiki](https://github.com/zysoft/o-d-a/wiki) for details.
